@@ -61,8 +61,8 @@ private val noNavBarRoutes = setOf(
 @Composable
 fun PlannoteNavGraph() {
     val navController = rememberNavController()
-    val navBackStack  by navController.currentBackStackEntryAsState()
-    val currentRoute  = navBackStack?.destination?.route
+    val navBackStack by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStack?.destination?.route
 
     Scaffold(
         containerColor = DarkBackground,
@@ -73,21 +73,21 @@ fun PlannoteNavGraph() {
         }
     ) { innerPadding ->
         NavHost(
-            navController       = navController,
-            startDestination    = Screen.Splash.route,
-            modifier            = Modifier.padding(innerPadding),
+            navController = navController,
+            startDestination = Screen.Splash.route,
+            modifier = Modifier.padding(innerPadding),
             // Tab navigatsiyada animatsiya yo'q — tez va toza
-            enterTransition     = { EnterTransition.None },
-            exitTransition      = { ExitTransition.None },
-            popEnterTransition  = { EnterTransition.None },
-            popExitTransition   = { ExitTransition.None }
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
         ) {
 
             // ── Splash ────────────────────────────────────────────────────────
             composable(
-                route           = Screen.Splash.route,
+                route = Screen.Splash.route,
                 enterTransition = { fadeIn(tween(400)) },
-                exitTransition  = { fadeOut(tween(400)) }
+                exitTransition = { fadeOut(tween(400)) }
             ) {
                 SplashScreen(
                     onNavigateToHome = {
@@ -105,9 +105,9 @@ fun PlannoteNavGraph() {
 
             // ── OnBoarding ────────────────────────────────────────────────────
             composable(
-                route          = Screen.OnBoarding.route,
+                route = Screen.OnBoarding.route,
                 enterTransition = { slideInRight },
-                exitTransition  = { slideOutLeft }
+                exitTransition = { slideOutLeft }
             ) {
                 OnBoardingScreen(
                     onFinish = {
@@ -121,8 +121,8 @@ fun PlannoteNavGraph() {
             // ── Home ──────────────────────────────────────────────────────────
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onNavigateToTasks  = { navController.navigate(Screen.Tasks.route) },
-                    onNavigateToNotes  = { navController.navigate(Screen.Notes.route) },
+                    onNavigateToTasks = { navController.navigate(Screen.Tasks.route) },
+                    onNavigateToNotes = { navController.navigate(Screen.Notes.route) },
                     onNavigateToStreak = { navController.navigate(Screen.Streak.route) }
                 )
             }
@@ -135,11 +135,11 @@ fun PlannoteNavGraph() {
 
             // ── Streak (Home dan o'ngdan kirib, orqaga chiqadi) ───────────────
             composable(
-                route              = Screen.Streak.route,
-                enterTransition    = { pushIn },
-                exitTransition     = { ExitTransition.None },
+                route = Screen.Streak.route,
+                enterTransition = { pushIn },
+                exitTransition = { ExitTransition.None },
                 popEnterTransition = { popIn },
-                popExitTransition  = { popOut }
+                popExitTransition = { popOut }
             ) {
                 StreakScreen(onNavigateBack = { navController.popBackStack() })
             }

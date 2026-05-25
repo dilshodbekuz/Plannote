@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import dagger.hilt.android.qualifiers.ApplicationContext
 import uz.apprica.plannote.receiver.AlarmReceiver
 import java.util.Calendar
 import javax.inject.Inject
@@ -12,7 +13,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AlarmScheduler @Inject constructor(
-    @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 

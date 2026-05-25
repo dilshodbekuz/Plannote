@@ -8,9 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import uz.apprica.plannote.MainActivity
 import uz.apprica.plannote.R
 import javax.inject.Inject
@@ -18,7 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationHelper @Inject constructor(
-    @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     companion object {
         const val NOTES_CHANNEL_ID      = "notes_reminder_channel"
@@ -32,6 +35,7 @@ class NotificationHelper @Inject constructor(
 
     // ── Channel setup ─────────────────────────────────────────────────────────
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannels() {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
@@ -65,6 +69,7 @@ class NotificationHelper @Inject constructor(
 
     // ── Show helpers ──────────────────────────────────────────────────────────
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showNoteReminder(noteId: Long, title: String, content: String) {
         if (!canPost()) return
 
@@ -82,6 +87,7 @@ class NotificationHelper @Inject constructor(
             .notify(notificationId("note", noteId), notification)
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showTaskReminder(taskId: Long, title: String, description: String) {
         if (!canPost()) return
 
@@ -101,6 +107,7 @@ class NotificationHelper @Inject constructor(
             .notify(notificationId("task", taskId), notification)
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showDailyMotivation(quote: String) {
         if (!canPost()) return
 

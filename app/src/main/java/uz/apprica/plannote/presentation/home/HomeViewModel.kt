@@ -2,11 +2,6 @@ package uz.apprica.plannote.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import uz.apprica.plannote.data.datastore.PreferencesDataStore
-import uz.apprica.plannote.data.streak.StreakManager
-import uz.apprica.plannote.domain.repository.QuoteRepository
-import uz.apprica.plannote.domain.usecase.note.GetAllNotesUseCase
-import uz.apprica.plannote.domain.usecase.task.GetTodayTasksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +9,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import uz.apprica.plannote.data.datastore.PreferencesDataStore
+import uz.apprica.plannote.data.streak.StreakManager
+import uz.apprica.plannote.domain.repository.QuoteRepository
+import uz.apprica.plannote.domain.usecase.note.GetAllNotesUseCase
+import uz.apprica.plannote.domain.usecase.task.GetTodayTasksUseCase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -21,18 +21,18 @@ import java.util.Locale
 import javax.inject.Inject
 
 data class HomeUiState(
-    val greeting: String          = "",
-    val greetingEmoji: String     = "☀️",
-    val todayDate: String         = "",
-    val quote: String             = "",
-    val todayTasksTotal: Int      = 0,
-    val todayTasksDone: Int       = 0,
-    val notesCount: Int           = 0,
-    val currentStreak: Int        = 0,
-    val bestStreak: Int           = 0,
+    val greeting: String = "",
+    val greetingEmoji: String = "☀️",
+    val todayDate: String = "",
+    val quote: String = "",
+    val todayTasksTotal: Int = 0,
+    val todayTasksDone: Int = 0,
+    val notesCount: Int = 0,
+    val currentStreak: Int = 0,
+    val bestStreak: Int = 0,
     val weeklyActivity: List<Boolean> = List(7) { false },
-    val selectedMood: Int?        = null,   // 1..5
-    val isLoading: Boolean        = true
+    val selectedMood: Int? = null,   // 1..5
+    val isLoading: Boolean = true
 )
 
 @HiltViewModel
@@ -51,10 +51,10 @@ class HomeViewModel @Inject constructor(
         val (greeting, emoji) = buildGreeting()
         _uiState.update {
             it.copy(
-                greeting      = greeting,
+                greeting = greeting,
                 greetingEmoji = emoji,
-                todayDate     = buildTodayDate(),
-                quote         = quoteRepository.getTodayQuote()
+                todayDate = buildTodayDate(),
+                quote = quoteRepository.getTodayQuote()
             )
         }
         observeData()
@@ -67,16 +67,16 @@ class HomeViewModel @Inject constructor(
                 getTodayTasksUseCase(),
                 getAllNotesUseCase()
             ) { tasks, notes -> tasks to notes }
-            .collect { (tasks, notes) ->
-                _uiState.update { state ->
-                    state.copy(
-                        todayTasksTotal = tasks.size,
-                        todayTasksDone  = tasks.count { it.isCompleted },
-                        notesCount      = notes.size,
-                        isLoading       = false
-                    )
+                .collect { (tasks, notes) ->
+                    _uiState.update { state ->
+                        state.copy(
+                            todayTasksTotal = tasks.size,
+                            todayTasksDone = tasks.count { it.isCompleted },
+                            notesCount = notes.size,
+                            isLoading = false
+                        )
+                    }
                 }
-            }
         }
 
         // ── Streak & Weekly Activity ──────────────────────────────────────────
@@ -90,8 +90,8 @@ class HomeViewModel @Inject constructor(
             }.collect { (streak, best, activity) ->
                 _uiState.update { state ->
                     state.copy(
-                        currentStreak  = streak,
-                        bestStreak     = best,
+                        currentStreak = streak,
+                        bestStreak = best,
                         weeklyActivity = activity
                     )
                 }
@@ -123,11 +123,11 @@ class HomeViewModel @Inject constructor(
     private fun buildGreeting(): Pair<String, String> {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         return when {
-            hour < 6  -> "Yaxshi tun"    to "🌙"
-            hour < 12 -> "Xayrli tong"   to "🌅"
-            hour < 17 -> "Xayrli kun"    to "☀️"
-            hour < 21 -> "Xayrli kech"   to "🌆"
-            else      -> "Yaxshi tun"    to "🌙"
+            hour < 6 -> "Yaxshi tun" to "🌙"
+            hour < 12 -> "Xayrli tong" to "🌅"
+            hour < 17 -> "Xayrli kun" to "☀️"
+            hour < 21 -> "Xayrli kech" to "🌆"
+            else -> "Yaxshi tun" to "🌙"
         }
     }
 

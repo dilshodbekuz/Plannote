@@ -34,15 +34,15 @@ fun BottomNavBar(navController: NavController) {
                             saveState = true
                         }
                         launchSingleTop = true
-                        restoreState    = true
+                        restoreState = true
                     }
                 },
-                icon  = { Icon(item.icon, contentDescription = item.label) },
+                icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label, maxLines = 1) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor   = PrimaryTeal,
-                    selectedTextColor   = PrimaryTeal,
-                    indicatorColor      = PrimaryTeal.copy(alpha = 0.15f),
+                    selectedIconColor = PrimaryTeal,
+                    selectedTextColor = PrimaryTeal,
+                    indicatorColor = PrimaryTeal.copy(alpha = 0.15f),
                     unselectedIconColor = TextSecondary,
                     unselectedTextColor = TextSecondary
                 )

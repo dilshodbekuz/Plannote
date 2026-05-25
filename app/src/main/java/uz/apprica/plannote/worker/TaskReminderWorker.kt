@@ -9,7 +9,6 @@ class TaskReminderWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
-
     companion object {
         const val KEY_TASK_ID     = "task_id"
         const val KEY_TITLE       = "title"

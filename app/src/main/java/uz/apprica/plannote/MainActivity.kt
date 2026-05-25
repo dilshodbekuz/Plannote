@@ -19,13 +19,10 @@ class MainActivity : Hilt_MainActivity() {
     private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // SplashScreen API: system splash (icon + background) ko'rsatiladi
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
-            // Dark mode holati ThemeViewModel orqali kuzatiladi
             val isDarkTheme by themeViewModel.isDarkTheme.collectAsStateWithLifecycle()
 
             PlannoteTheme(darkTheme = isDarkTheme) {
