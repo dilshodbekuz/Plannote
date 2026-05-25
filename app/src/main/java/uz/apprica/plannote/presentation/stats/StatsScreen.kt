@@ -36,6 +36,7 @@ import java.util.Locale
 @Composable
 fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
     val c     = MaterialTheme.appColors
+    val s     = MaterialTheme.strings
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
@@ -49,45 +50,74 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
     ) {
         Spacer(Modifier.height(16.dp))
 
-        Text("Statistika",           style = MaterialTheme.typography.headlineSmall, color = c.textPrimary,   fontWeight = FontWeight.Bold)
-        Text("Joriy hafta natijalari", style = MaterialTheme.typography.bodySmall,    color = c.textSecondary)
+        Text(s.statistics,    style = MaterialTheme.typography.headlineSmall, color = c.textPrimary,   fontWeight = FontWeight.Bold)
+        Text(s.weeklyResults, style = MaterialTheme.typography.bodySmall,     color = c.textSecondary)
 
-        StatsStreakCard(streak = state.streak, bestStreak = state.bestStreak, weeklyActivity = state.weeklyActivity)
+        StatsStreakCard(
+            streak         = state.streak,
+            bestStreak     = state.bestStreak,
+            weeklyActivity = state.weeklyActivity,
+            daysLabel      = s.days,
+            rekord         = s.rekord,
+            dayAbbrs       = s.dayAbbreviations
+        )
 
-        MoodHistorySection(moodHistory = state.moodHistory)
+        MoodHistorySection(
+            moodHistory = state.moodHistory,
+            title       = s.weeklyMood,
+            noMoodYet   = s.noMoodYet,
+            dayAbbrs    = s.dayAbbreviations
+        )
 
         if (state.weeklyTaskStats.isNotEmpty()) {
-            SectionCard(title = "Haftalik vazifalar", badge = null) { TaskWeeklyBarChart(days = state.weeklyTaskStats) }
+            SectionCard(title = s.weeklyTasks, badge = null) { TaskWeeklyBarChart(days = state.weeklyTaskStats) }
         }
 
         state.weeklyStats?.let { stats ->
-            SectionCard(title = "Haftalik odatlar", badge = "${(stats.avgCompletionRate * 100).toInt()}% o'rtacha") {
+            SectionCard(
+                title = s.weeklyHabits,
+                badge = "${(stats.avgCompletionRate * 100).toInt()}% ${s.averageLabel}"
+            ) {
                 WeeklyBarChart(days = stats.days)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SummaryCard(modifier = Modifier.weight(1f), emoji = "🏆", label = "Eng uzun odat streak",   value = "${stats.bestStreak} kun",                         valueColor = AccentAmber, subtitle = stats.bestStreakHabitName.take(14))
-                SummaryCard(modifier = Modifier.weight(1f), emoji = "✅", label = "Haftalik vazifalar",      value = "${state.completedTasksThisWeek}/${state.totalTasksThisWeek}", valueColor = PrimaryTeal, subtitle = "bajarildi")
+                SummaryCard(
+                    modifier   = Modifier.weight(1f),
+                    emoji      = "🏆",
+                    label      = s.longestHabitStreakLabel,
+                    value      = "${stats.bestStreak} ${s.days}",
+                    valueColor = AccentAmber,
+                    subtitle   = stats.bestStreakHabitName.take(14)
+                )
+                SummaryCard(
+                    modifier   = Modifier.weight(1f),
+                    emoji      = "✅",
+                    label      = s.weeklyTasks,
+                    value      = "${state.completedTasksThisWeek}/${state.totalTasksThisWeek}",
+                    valueColor = PrimaryTeal,
+                    subtitle   = s.completed
+                )
             }
         }
 
         if (state.habitStats.isNotEmpty()) {
-            SectionCard(title = "Odat tracker", badge = null) {
-                HabitStatsHeader()
+            SectionCard(title = s.habitTracker, badge = null) {
+                HabitStatsHeader(dayAbbrs = s.dayAbbreviations)
                 HorizontalDivider(color = c.divider, modifier = Modifier.padding(vertical = 4.dp))
-                state.habitStats.forEach { hs -> HabitStatsDotRow(habitStats = hs) }
+                state.habitStats.forEach { hs -> HabitStatsDotRow(habitStats = hs, daysLabel = s.days) }
             }
         } else if (state.habitWeeklyData.isNotEmpty()) {
-            SectionCard(title = "Habit tracker", badge = null) {
-                HabitStatsHeader()
+            SectionCard(title = s.habitTracker, badge = null) {
+                HabitStatsHeader(dayAbbrs = s.dayAbbreviations)
                 HorizontalDivider(color = c.divider, modifier = Modifier.padding(vertical = 4.dp))
-                state.habitWeeklyData.forEach { habitData -> HabitDotRow(habitData = habitData) }
+                state.habitWeeklyData.forEach { habitData -> HabitDotRow(habitData = habitData, daysLabel = s.days) }
             }
         }
 
         OverallStatsSection(stats = state.overallStats)
 
         if (state.habitWeeklyData.isEmpty() && state.weeklyStats == null && state.habitStats.isEmpty()) {
-            EmptyStatsPlaceholder()
+            EmptyStatsPlaceholder(noStats = s.noStats, noStatsHint = s.noStatsHint)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -98,19 +128,20 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
 
 private val DATE_FMT_STATS = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-private fun realDayLabel(index: Int): String {
+private fun realDayLabel(index: Int, abbrs: List<String>): String {
     val daysAgo = 6 - index
     val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -daysAgo) }
-    return when (cal.get(Calendar.DAY_OF_WEEK)) {
-        Calendar.MONDAY    -> "Du"
-        Calendar.TUESDAY   -> "Se"
-        Calendar.WEDNESDAY -> "Ch"
-        Calendar.THURSDAY  -> "Pa"
-        Calendar.FRIDAY    -> "Ju"
-        Calendar.SATURDAY  -> "Sh"
-        Calendar.SUNDAY    -> "Ya"
-        else               -> "?"
+    val dayIdx = when (cal.get(Calendar.DAY_OF_WEEK)) {
+        Calendar.MONDAY    -> 0
+        Calendar.TUESDAY   -> 1
+        Calendar.WEDNESDAY -> 2
+        Calendar.THURSDAY  -> 3
+        Calendar.FRIDAY    -> 4
+        Calendar.SATURDAY  -> 5
+        Calendar.SUNDAY    -> 6
+        else               -> 0
     }
+    return abbrs.getOrElse(dayIdx) { "?" }
 }
 
 private fun dateStrDaysAgo(daysAgo: Int): String {
@@ -121,7 +152,14 @@ private fun dateStrDaysAgo(daysAgo: Int): String {
 // ── Streak Card ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun StatsStreakCard(streak: Int, bestStreak: Int, weeklyActivity: List<Boolean>) {
+private fun StatsStreakCard(
+    streak: Int,
+    bestStreak: Int,
+    weeklyActivity: List<Boolean>,
+    daysLabel: String,
+    rekord: String,
+    dayAbbrs: List<String>
+) {
     val c = MaterialTheme.appColors
     Box(
         modifier = Modifier
@@ -133,19 +171,19 @@ private fun StatsStreakCard(streak: Int, bestStreak: Int, weeklyActivity: List<B
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("🔥 Joriy streak", style = MaterialTheme.typography.labelMedium, color = AccentAmber)
+                    Text("🔥 Streak", style = MaterialTheme.typography.labelMedium, color = AccentAmber)
                     Spacer(Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text("$streak", style = MaterialTheme.typography.headlineLarge, color = c.textPrimary, fontWeight = FontWeight.Bold)
-                        Text(" kun", style = MaterialTheme.typography.titleMedium, color = c.textSecondary, modifier = Modifier.padding(bottom = 6.dp))
+                        Text(" $daysLabel", style = MaterialTheme.typography.titleMedium, color = c.textSecondary, modifier = Modifier.padding(bottom = 6.dp))
                     }
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("🏆 Rekord", style = MaterialTheme.typography.labelMedium, color = c.textHint)
+                    Text("🏆 $rekord", style = MaterialTheme.typography.labelMedium, color = c.textHint)
                     Spacer(Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text("$bestStreak", style = MaterialTheme.typography.headlineMedium, color = AccentAmber, fontWeight = FontWeight.Bold)
-                        Text(" kun", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary, modifier = Modifier.padding(bottom = 4.dp))
+                        Text(" $daysLabel", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary, modifier = Modifier.padding(bottom = 4.dp))
                     }
                 }
             }
@@ -162,7 +200,7 @@ private fun StatsStreakCard(streak: Int, bestStreak: Int, weeklyActivity: List<B
                             )
                         )
                         Text(
-                            text       = realDayLabel(index),
+                            text       = realDayLabel(index, dayAbbrs),
                             style      = MaterialTheme.typography.labelSmall,
                             color      = if (index == weeklyActivity.lastIndex) AccentAmber else if (active) c.textSecondary else c.textHint,
                             fontSize   = 9.sp,
@@ -246,12 +284,12 @@ fun WeeklyBarChart(days: List<DayStats>, modifier: Modifier = Modifier) {
 // ── Habit Dot Rows ────────────────────────────────────────────────────────────
 
 @Composable
-private fun HabitStatsHeader() {
+private fun HabitStatsHeader(dayAbbrs: List<String>) {
     val c = MaterialTheme.appColors
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Spacer(Modifier.width(160.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf("D", "S", "C", "P", "J", "Sh", "Y").forEach { label ->
+            dayAbbrs.forEach { label ->
                 Text(label, style = MaterialTheme.typography.labelSmall, color = c.textHint, modifier = Modifier.width(16.dp), fontSize = 9.sp)
             }
         }
@@ -259,14 +297,14 @@ private fun HabitStatsHeader() {
 }
 
 @Composable
-fun HabitStatsDotRow(habitStats: HabitStats, modifier: Modifier = Modifier) {
+fun HabitStatsDotRow(habitStats: HabitStats, daysLabel: String, modifier: Modifier = Modifier) {
     val c = MaterialTheme.appColors
     Row(modifier = modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(habitStats.iconEmoji, fontSize = 18.sp, modifier = Modifier.width(28.dp))
         Spacer(Modifier.width(6.dp))
         Column(modifier = Modifier.width(120.dp)) {
             Text(habitStats.habitName, style = MaterialTheme.typography.bodySmall, color = c.textPrimary, maxLines = 1, fontWeight = FontWeight.Medium)
-            Text("🔥 ${habitStats.currentStreak} kun · ${(habitStats.percentage * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
+            Text("🔥 ${habitStats.currentStreak} $daysLabel · ${(habitStats.percentage * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -278,14 +316,14 @@ fun HabitStatsDotRow(habitStats: HabitStats, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun HabitDotRow(habitData: HabitWeeklyData, modifier: Modifier = Modifier) {
+fun HabitDotRow(habitData: HabitWeeklyData, daysLabel: String, modifier: Modifier = Modifier) {
     val c = MaterialTheme.appColors
     Row(modifier = modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(habitData.habit.iconEmoji, fontSize = 18.sp, modifier = Modifier.width(28.dp))
         Spacer(Modifier.width(6.dp))
         Column(modifier = Modifier.width(120.dp)) {
             Text(habitData.habit.name, style = MaterialTheme.typography.bodySmall, color = c.textPrimary, maxLines = 1, fontWeight = FontWeight.Medium)
-            Text("🔥 ${habitData.habit.currentStreak} kun", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
+            Text("🔥 ${habitData.habit.currentStreak} $daysLabel", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -301,15 +339,16 @@ fun HabitDotRow(habitData: HabitWeeklyData, modifier: Modifier = Modifier) {
 @Composable
 private fun OverallStatsSection(stats: OverallStats) {
     val c = MaterialTheme.appColors
+    val s = MaterialTheme.strings
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Umumiy statistika", style = MaterialTheme.typography.titleSmall, color = c.textPrimary, fontWeight = FontWeight.SemiBold)
+        Text(s.overallStats, style = MaterialTheme.typography.titleSmall, color = c.textPrimary, fontWeight = FontWeight.SemiBold)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(modifier = Modifier.weight(1f), emoji = "📋", label = "Jami vazifalar",  value = "${stats.totalTasks}",                    valueColor = PrimaryTeal, subtitle = "${stats.completedTasks} bajarildi")
-            SummaryCard(modifier = Modifier.weight(1f), emoji = "📊", label = "Bajarilish %",    value = "${stats.completionPercent.toInt()}%",    valueColor = if (stats.completionPercent >= 70f) PrimaryTeal else AccentAmber, subtitle = "${stats.completedTasks}/${stats.totalTasks}")
+            SummaryCard(modifier = Modifier.weight(1f), emoji = "📋", label = s.totalTasksLabel,   value = "${stats.totalTasks}",                    valueColor = PrimaryTeal, subtitle = "${stats.completedTasks} ${s.completed}")
+            SummaryCard(modifier = Modifier.weight(1f), emoji = "📊", label = s.completionPctLabel, value = "${stats.completionPercent.toInt()}%",   valueColor = if (stats.completionPercent >= 70f) PrimaryTeal else AccentAmber, subtitle = "${stats.completedTasks}/${stats.totalTasks}")
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(modifier = Modifier.weight(1f), emoji = "📝", label = "Eslatmalar",      value = "${stats.totalNotes}",                    valueColor = AccentAmber, subtitle = "jami")
-            SummaryCard(modifier = Modifier.weight(1f), emoji = "🎯", label = "Faol odatlar",    value = "${stats.activeHabits}/${stats.totalHabits}", valueColor = PrimaryTeal, subtitle = "aktiv")
+            SummaryCard(modifier = Modifier.weight(1f), emoji = "📝", label = s.navNotes,           value = "${stats.totalNotes}",                   valueColor = AccentAmber, subtitle = s.allLabel)
+            SummaryCard(modifier = Modifier.weight(1f), emoji = "🎯", label = s.activeHabitsLabel,  value = "${stats.activeHabits}/${stats.totalHabits}", valueColor = PrimaryTeal, subtitle = s.activeLabel)
         }
     }
 }
@@ -333,8 +372,13 @@ private val MOOD_EMOJIS = listOf("😢", "😐", "😊", "😄", "🤩")
 private val MOOD_COLORS = listOf(Color(0xFFEF5350), Color(0xFFBDBDBD), Color(0xFF66BB6A), Color(0xFF29B6F6), Color(0xFFFFB347))
 
 @Composable
-private fun MoodHistorySection(moodHistory: Map<String, Int>) {
-    SectionCard(title = "Haftalik kayfiyat", badge = null) {
+private fun MoodHistorySection(
+    moodHistory: Map<String, Int>,
+    title: String,
+    noMoodYet: String,
+    dayAbbrs: List<String>
+) {
+    SectionCard(title = title, badge = null) {
         val c = MaterialTheme.appColors
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             (0..6).forEach { index ->
@@ -350,14 +394,14 @@ private fun MoodHistorySection(moodHistory: Map<String, Int>) {
                         if (mood != null) Text(MOOD_EMOJIS[mood - 1], fontSize = 20.sp)
                         else Text("·", fontSize = 18.sp, color = c.textHint)
                     }
-                    Text(realDayLabel(index), fontSize = 9.sp, color = if (isToday) AccentAmber else c.textHint, fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal)
+                    Text(realDayLabel(index, dayAbbrs), fontSize = 9.sp, color = if (isToday) AccentAmber else c.textHint, fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal)
                 }
             }
         }
         val hasAnyMood = (0..6).any { index -> moodHistory[dateStrDaysAgo(6 - index)] != null }
         if (!hasAnyMood) {
             Spacer(Modifier.height(8.dp))
-            Text("Hali kayfiyat belgilanmagan. Home ekranidan belgilang!", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.appColors.textHint)
+            Text(noMoodYet, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.appColors.textHint)
         }
     }
 }
@@ -365,11 +409,11 @@ private fun MoodHistorySection(moodHistory: Map<String, Int>) {
 // ── Empty ─────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EmptyStatsPlaceholder() {
+private fun EmptyStatsPlaceholder(noStats: String, noStatsHint: String) {
     val c = MaterialTheme.appColors
     Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(Icons.Default.BarChart, contentDescription = null, tint = c.textHint, modifier = Modifier.size(64.dp))
-        Text("Statistika yo'q",                                         style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
-        Text("Odat yoki vazifa qo'shgandan keyin bu yerda ko'rinadi",   style = MaterialTheme.typography.bodySmall,  color = c.textHint)
+        Text(noStats,     style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
+        Text(noStatsHint, style = MaterialTheme.typography.bodySmall,  color = c.textHint)
     }
 }

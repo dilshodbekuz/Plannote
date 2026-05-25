@@ -50,6 +50,7 @@ class PreferencesDataStore @Inject constructor(
         val KEY_REMINDER_HOUR        = intPreferencesKey("reminder_hour")
         val KEY_REMINDER_MINUTE      = intPreferencesKey("reminder_minute")
         val KEY_IS_DARK_MODE         = booleanPreferencesKey("is_dark_mode")
+        val KEY_LANGUAGE             = stringPreferencesKey("language")
         // ── Kunlik reset ─────────────────────────────────────────────────────
         val KEY_LAST_TASK_RESET      = stringPreferencesKey("last_task_reset_date")
 
@@ -227,6 +228,15 @@ class PreferencesDataStore @Inject constructor(
 
     suspend fun setDarkMode(dark: Boolean) {
         dataStore.edit { it[KEY_IS_DARK_MODE] = dark }
+    }
+
+    /** Ilova tili (default "uz") */
+    fun getLanguage(): Flow<String> = dataStore.data
+        .catchIO()
+        .map { it[KEY_LANGUAGE] ?: "uz" }
+
+    suspend fun setLanguage(lang: String) {
+        dataStore.edit { it[KEY_LANGUAGE] = lang }
     }
 
     // ── Kunlik vazifalar reset ─────────────────────────────────────────────────

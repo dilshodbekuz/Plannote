@@ -12,21 +12,30 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import uz.apprica.plannote.ui.theme.PrimaryTeal
 import uz.apprica.plannote.ui.theme.appColors
+import uz.apprica.plannote.ui.theme.strings
 
 /** Bottom nav: faqat asosiy ekranlarda ko'rinadi */
 private val NAV_ROUTES = Screen.bottomNavItems.map { it.screen.route }.toSet()
 
 @Composable
 fun BottomNavBar(navController: NavController) {
-    val appColors = MaterialTheme.appColors
+    val c = MaterialTheme.appColors
+    val s = MaterialTheme.strings
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar(
-        containerColor = appColors.surface,
+        containerColor = c.surface,
         tonalElevation = androidx.compose.ui.unit.Dp.Unspecified
     ) {
         Screen.bottomNavItems.forEach { item ->
+            val label = when (item.screen) {
+                Screen.Home     -> s.navHome
+                Screen.Tasks    -> s.navTasks
+                Screen.Notes    -> s.navNotes
+                Screen.Settings -> s.navSettings
+                else            -> item.label
+            }
             NavigationBarItem(
                 selected = currentRoute == item.screen.route,
                 onClick = {
@@ -36,14 +45,14 @@ fun BottomNavBar(navController: NavController) {
                         restoreState    = true
                     }
                 },
-                icon  = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label, maxLines = 1) },
+                icon  = { Icon(item.icon, contentDescription = label) },
+                label = { Text(label, maxLines = 1) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor   = PrimaryTeal,
                     selectedTextColor   = PrimaryTeal,
                     indicatorColor      = PrimaryTeal.copy(alpha = 0.15f),
-                    unselectedIconColor = appColors.textSecondary,
-                    unselectedTextColor = appColors.textSecondary
+                    unselectedIconColor = c.textSecondary,
+                    unselectedTextColor = c.textSecondary
                 )
             )
         }

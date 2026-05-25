@@ -44,6 +44,7 @@ import kotlin.math.roundToInt
 @Composable
 fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
     val c     = MaterialTheme.appColors
+    val s     = MaterialTheme.strings
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
@@ -62,16 +63,17 @@ fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressRing(
-                    progress = state.progressFraction,
-                    done     = state.completedCount,
-                    total    = state.totalCount
+                    progress      = state.progressFraction,
+                    done          = state.completedCount,
+                    total         = state.totalCount,
+                    completedLabel = s.completed
                 )
             }
 
             Spacer(Modifier.height(20.dp))
 
             if (state.tasks.isEmpty() && !state.isLoading) {
-                EmptyTasksPlaceholder()
+                EmptyTasksPlaceholder(noTasks = s.noTasks, noTasksHint = s.noTasksHint)
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -95,7 +97,7 @@ fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
             contentColor   = c.background,
             shape          = CircleShape
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Vazifa qo'shish")
+            Icon(Icons.Default.Add, contentDescription = s.newTask)
         }
 
         if (state.showAddSheet) {
@@ -116,6 +118,7 @@ fun CircularProgressRing(
     progress: Float,
     done: Int,
     total: Int,
+    completedLabel: String,
     modifier: Modifier = Modifier,
     size: androidx.compose.ui.unit.Dp = 148.dp,
     strokeDp: androidx.compose.ui.unit.Dp = 14.dp
@@ -153,8 +156,8 @@ fun CircularProgressRing(
                 color      = PrimaryTeal,
                 fontWeight = FontWeight.Bold
             )
-            Text("$done / $total", style = MaterialTheme.typography.bodySmall,  color = c.textSecondary)
-            Text("bajarildi",      style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
+            Text("$done / $total",    style = MaterialTheme.typography.bodySmall,  color = c.textSecondary)
+            Text(completedLabel,       style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
         }
     }
 }
@@ -169,8 +172,14 @@ fun TaskItem(
     modifier: Modifier = Modifier
 ) {
     val c            = MaterialTheme.appColors
+    val s            = MaterialTheme.strings
     val done         = task.isCompleted
     val priorityTint = task.priority.color()
+    val priorityLabel = when (task.priority) {
+        Priority.LOW    -> s.priorityLow
+        Priority.MEDIUM -> s.priorityMedium
+        Priority.HIGH   -> s.priorityHigh
+    }
 
     Card(
         modifier  = modifier.fillMaxWidth(),
@@ -225,7 +234,7 @@ fun TaskItem(
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    text       = task.priority.label(),
+                    text       = priorityLabel,
                     fontSize   = 11.sp,
                     color      = priorityTint,
                     fontWeight = FontWeight.SemiBold
@@ -237,7 +246,7 @@ fun TaskItem(
             ) {
                 Icon(
                     imageVector        = Icons.Default.Delete,
-                    contentDescription = "O'chirish",
+                    contentDescription = s.delete,
                     tint               = ErrorRed.copy(alpha = if (done) 0.25f else 0.60f),
                     modifier           = Modifier.size(20.dp)
                 )
@@ -255,14 +264,19 @@ fun AddTaskBottomSheet(
     onConfirm: (title: String, category: String, priority: Priority) -> Unit
 ) {
     val c          = MaterialTheme.appColors
+    val s          = MaterialTheme.strings
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val categories = s.taskCategories
+    val priorities = listOf(
+        Priority.LOW    to s.priorityLow,
+        Priority.MEDIUM to s.priorityMedium,
+        Priority.HIGH   to s.priorityHigh
+    )
+
     var title      by remember { mutableStateOf("") }
-    var category   by remember { mutableStateOf("Shaxsiy") }
+    var category   by remember(s) { mutableStateOf(categories.getOrElse(1) { "" }) }
     var priority   by remember { mutableStateOf(Priority.MEDIUM) }
     var titleError by remember { mutableStateOf(false) }
-
-    val categories = listOf("Ish", "Shaxsiy", "Salomatlik", "Ta'lim", "Boshqa")
-    val priorities = listOf(Priority.LOW to "Past", Priority.MEDIUM to "O'rta", Priority.HIGH to "Yuqori")
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -279,7 +293,7 @@ fun AddTaskBottomSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text       = "Yangi vazifa",
+                text       = s.newTask,
                 style      = MaterialTheme.typography.titleLarge,
                 color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
@@ -288,9 +302,9 @@ fun AddTaskBottomSheet(
             OutlinedTextField(
                 value          = title,
                 onValueChange  = { title = it; titleError = false },
-                placeholder    = { Text("Vazifa nomi *", color = c.textHint) },
+                placeholder    = { Text(s.taskNameHint, color = c.textHint) },
                 isError        = titleError,
-                supportingText = if (titleError) ({ Text("Nom kiritish shart!") }) else null,
+                supportingText = if (titleError) ({ Text(s.taskNameRequired) }) else null,
                 modifier       = Modifier.fillMaxWidth(),
                 colors         = taskFieldColors(),
                 singleLine     = true,
@@ -298,7 +312,7 @@ fun AddTaskBottomSheet(
             )
 
             Column {
-                Text("Kategoriya", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
+                Text(s.categoryLabel, style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
                 Spacer(Modifier.height(8.dp))
                 Row(
                     modifier              = Modifier.horizontalScroll(rememberScrollState()),
@@ -321,7 +335,7 @@ fun AddTaskBottomSheet(
             }
 
             Column {
-                Text("Muhimlik", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
+                Text(s.priorityLabel, style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     priorities.forEach { (p, label) ->
@@ -352,7 +366,7 @@ fun AddTaskBottomSheet(
                     contentColor   = c.background
                 )
             ) {
-                Text("Qo'shish", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(s.add, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
         }
     }
@@ -361,7 +375,7 @@ fun AddTaskBottomSheet(
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun EmptyTasksPlaceholder() {
+private fun EmptyTasksPlaceholder(noTasks: String, noTasksHint: String) {
     val c = MaterialTheme.appColors
     Column(
         modifier            = Modifier.fillMaxWidth().padding(top = 48.dp),
@@ -369,8 +383,8 @@ private fun EmptyTasksPlaceholder() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = c.textHint, modifier = Modifier.size(64.dp))
-        Text("Bugun uchun vazifa yo'q", style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
-        Text("+ tugmasi orqali vazifa qo'shing", style = MaterialTheme.typography.bodySmall, color = c.textHint)
+        Text(noTasks,     style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
+        Text(noTasksHint, style = MaterialTheme.typography.bodySmall,  color = c.textHint)
     }
 }
 
@@ -380,12 +394,6 @@ private fun Priority.color(): Color = when (this) {
     Priority.LOW    -> PriorityLow
     Priority.MEDIUM -> PriorityMedium
     Priority.HIGH   -> PriorityHigh
-}
-
-private fun Priority.label(): String = when (this) {
-    Priority.LOW    -> "Past"
-    Priority.MEDIUM -> "O'rta"
-    Priority.HIGH   -> "Yuqori"
 }
 
 @Composable

@@ -8,7 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
-
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import uz.apprica.plannote.presentation.home.HomeScreen
+import uz.apprica.plannote.presentation.language.LanguageScreen
 import uz.apprica.plannote.presentation.notes.NoteScreen
 import uz.apprica.plannote.presentation.onboarding.OnBoardingScreen
 import uz.apprica.plannote.presentation.settings.SettingsScreen
@@ -25,7 +26,7 @@ import uz.apprica.plannote.presentation.splash.SplashScreen
 import uz.apprica.plannote.presentation.stats.StatsScreen
 import uz.apprica.plannote.presentation.streak.StreakScreen
 import uz.apprica.plannote.presentation.tasks.TaskScreen
-import uz.apprica.plannote.ui.theme.DarkBackground
+import uz.apprica.plannote.ui.theme.appColors
 
 private val slideInRight: EnterTransition =
     slideInHorizontally(tween(220)) { it } + fadeIn(tween(220))
@@ -47,6 +48,7 @@ private val popOut: ExitTransition =
 
 private val noNavBarRoutes = setOf(
     Screen.Splash.route,
+    Screen.Language.route,
     Screen.OnBoarding.route,
     Screen.Streak.route,
     Screen.Stats.route
@@ -55,11 +57,12 @@ private val noNavBarRoutes = setOf(
 @Composable
 fun PlannoteNavGraph() {
     val navController = rememberNavController()
-    val navBackStack by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStack?.destination?.route
+    val navBackStack  by navController.currentBackStackEntryAsState()
+    val currentRoute  = navBackStack?.destination?.route
+    val c             = MaterialTheme.appColors
 
     Scaffold(
-        containerColor = DarkBackground,
+        containerColor = c.background,
         bottomBar = {
             if (currentRoute !in noNavBarRoutes) {
                 BottomNavBar(navController)
@@ -87,9 +90,24 @@ fun PlannoteNavGraph() {
                             popUpTo(Screen.Splash.route) { inclusive = true }
                         }
                     },
-                    onNavigateToOnBoarding = {
-                        navController.navigate(Screen.OnBoarding.route) {
+                    onNavigateToLanguage = {
+                        navController.navigate(Screen.Language.route) {
                             popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            // ── Language ──────────────────────────────────────────────────────
+            composable(
+                route           = Screen.Language.route,
+                enterTransition = { slideInRight },
+                exitTransition  = { slideOutLeft }
+            ) {
+                LanguageScreen(
+                    onContinue = {
+                        navController.navigate(Screen.OnBoarding.route) {
+                            popUpTo(Screen.Language.route) { inclusive = true }
                         }
                     }
                 )
@@ -122,7 +140,7 @@ fun PlannoteNavGraph() {
             // ── Tasks ─────────────────────────────────────────────────────────
             composable(Screen.Tasks.route) { TaskScreen() }
 
-            // ── Notes (Eslatmalar) ────────────────────────────────────────────
+            // ── Notes ─────────────────────────────────────────────────────────
             composable(Screen.Notes.route) { NoteScreen() }
 
             // ── Streak ────────────────────────────────────────────────────────

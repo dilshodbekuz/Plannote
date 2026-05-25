@@ -63,11 +63,20 @@ private val PlannoteLightColorScheme = lightColorScheme(
 @Composable
 fun PlannoteTheme(
     darkTheme: Boolean = true,
+    language: String = "uz",
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) darkAppColors else lightAppColors
+    val colors  = if (darkTheme) darkAppColors else lightAppColors
+    val strings = when (language) {
+        "ru" -> ruStrings
+        "en" -> enStrings
+        else -> uzStrings
+    }
 
-    CompositionLocalProvider(LocalAppColors provides colors) {
+    CompositionLocalProvider(
+        LocalAppColors  provides colors,
+        LocalAppStrings provides strings
+    ) {
         MaterialTheme(
             colorScheme = if (darkTheme) PlannoteDarkColorScheme else PlannoteLightColorScheme,
             typography  = PlannoteTypography,

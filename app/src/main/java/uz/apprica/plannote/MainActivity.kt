@@ -24,8 +24,9 @@ class MainActivity : Hilt_MainActivity() {
         enableEdgeToEdge()
         setContent {
             val isDarkTheme by themeViewModel.isDarkTheme.collectAsStateWithLifecycle()
+            val language    by themeViewModel.language.collectAsStateWithLifecycle()
 
-            PlannoteTheme(darkTheme = isDarkTheme) {
+            PlannoteTheme(darkTheme = isDarkTheme, language = language) {
                 PlannoteNavGraph()
             }
         }

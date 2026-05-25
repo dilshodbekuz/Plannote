@@ -19,8 +19,9 @@ sealed class Screen(val route: String) {
     data object Streak : Screen("streak")
     data object Stats  : Screen("stats")
 
-    // ── Splash & OnBoarding ───────────────────────────────────────────────────
+    // ── Splash, Language & OnBoarding ────────────────────────────────────────
     data object Splash     : Screen("splash")
+    data object Language   : Screen("language")
     data object OnBoarding : Screen("onboarding")
 
     companion object {

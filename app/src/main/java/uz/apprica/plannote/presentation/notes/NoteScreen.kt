@@ -35,6 +35,7 @@ import uz.apprica.plannote.domain.model.Note
 import uz.apprica.plannote.ui.theme.AccentAmber
 import uz.apprica.plannote.ui.theme.ErrorRed
 import uz.apprica.plannote.ui.theme.appColors
+import uz.apprica.plannote.ui.theme.strings
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,6 +44,7 @@ import java.util.Locale
 @Composable
 fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
     val c             = MaterialTheme.appColors
+    val s             = MaterialTheme.strings
     val searchQuery   by viewModel.searchQuery.collectAsStateWithLifecycle()
     val pinnedNotes   by viewModel.pinnedNotes.collectAsStateWithLifecycle()
     val unpinnedNotes by viewModel.unpinnedNotes.collectAsStateWithLifecycle()
@@ -63,7 +65,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text       = "Eslatmalar",
+                text       = s.notesTitle,
                 style      = MaterialTheme.typography.headlineSmall,
                 color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
@@ -74,7 +76,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value         = searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
-                placeholder   = { Text("Eslatmalarni qidirish...", color = c.textHint) },
+                placeholder   = { Text(s.searchNotes, color = c.textHint) },
                 leadingIcon   = {
                     Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(20.dp))
                 },
@@ -92,7 +94,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
             Spacer(Modifier.height(16.dp))
 
             if (allNotes.isEmpty()) {
-                NoteEmptyPlaceholder()
+                NoteEmptyPlaceholder(noNotes = s.noNotes, noNotesHint = s.noNotesHint)
             } else {
                 val columns = if (allNotes.size == 1) 1 else 2
                 LazyVerticalStaggeredGrid(
@@ -102,10 +104,11 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
                     contentPadding        = PaddingValues(bottom = 88.dp)
                 ) {
                     if (pinnedNotes.isNotEmpty() && searchQuery.isBlank()) {
-                        item(span = StaggeredGridItemSpan.FullLine) { PinnedLabel() }
+                        item(span = StaggeredGridItemSpan.FullLine) { PinnedLabel(s.pinnedLabel) }
                         items(pinnedNotes, key = { "pinned_${it.id}" }) { note ->
                             NoteCard(
                                 note        = note,
+                                deleteLabel = s.delete,
                                 onClick     = { selectedNote = note },
                                 onDelete    = { viewModel.deleteNote(note) },
                                 onTogglePin = { viewModel.togglePin(note) }
@@ -115,6 +118,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
                     items(unpinnedNotes, key = { "note_${it.id}" }) { note ->
                         NoteCard(
                             note        = note,
+                            deleteLabel = s.delete,
                             onClick     = { selectedNote = note },
                             onDelete    = { viewModel.deleteNote(note) },
                             onTogglePin = { viewModel.togglePin(note) }
@@ -131,7 +135,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
             contentColor   = c.background,
             shape          = CircleShape
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Eslatma qo'shish")
+            Icon(Icons.Default.Add, contentDescription = s.newNote)
         }
 
         if (showAddSheet) {
@@ -152,6 +156,7 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
 @Composable
 fun NoteCard(
     note: Note,
+    deleteLabel: String,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onTogglePin: () -> Unit,
@@ -212,7 +217,7 @@ fun NoteCard(
                     IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                         Icon(
                             imageVector        = Icons.Default.Delete,
-                            contentDescription = "O'chirish",
+                            contentDescription = deleteLabel,
                             tint               = ErrorRed.copy(alpha = 0.5f),
                             modifier           = Modifier.size(22.dp)
                         )
@@ -283,6 +288,7 @@ fun AddNoteBottomSheet(
     onConfirm: (title: String, content: String, color: Int) -> Unit
 ) {
     val c             = MaterialTheme.appColors
+    val s             = MaterialTheme.strings
     val sheetState    = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var title         by remember { mutableStateOf("") }
     var content       by remember { mutableStateOf("") }
@@ -303,7 +309,7 @@ fun AddNoteBottomSheet(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text(
-                text  = "Eslatma uchun ranglar",
+                text  = s.noteColors,
                 style = MaterialTheme.typography.labelMedium,
                 color = c.textSecondary
             )
@@ -333,7 +339,7 @@ fun AddNoteBottomSheet(
             }
 
             Text(
-                text       = "Yangi eslatma",
+                text       = s.newNote,
                 style      = MaterialTheme.typography.titleLarge,
                 color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
@@ -342,7 +348,7 @@ fun AddNoteBottomSheet(
             OutlinedTextField(
                 value         = title,
                 onValueChange = { title = it },
-                placeholder   = { Text("Sarlavha (ixtiyoriy)...", color = c.textHint) },
+                placeholder   = { Text(s.noteTitleHint, color = c.textHint) },
                 modifier      = Modifier.fillMaxWidth(),
                 colors        = noteSearchColors(),
                 singleLine    = true,
@@ -352,7 +358,7 @@ fun AddNoteBottomSheet(
             OutlinedTextField(
                 value         = content,
                 onValueChange = { content = it },
-                placeholder   = { Text("Fikrlaringizni yozing...", color = c.textHint) },
+                placeholder   = { Text(s.noteContentHint, color = c.textHint) },
                 modifier      = Modifier.fillMaxWidth().heightIn(min = 120.dp),
                 colors        = noteSearchColors(),
                 maxLines      = 8,
@@ -372,7 +378,7 @@ fun AddNoteBottomSheet(
                     contentColor   = c.background
                 )
             ) {
-                Text("Saqlash", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(s.save, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
         }
     }
@@ -381,7 +387,7 @@ fun AddNoteBottomSheet(
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun PinnedLabel() {
+private fun PinnedLabel(label: String) {
     val c = MaterialTheme.appColors
     Row(
         verticalAlignment     = Alignment.CenterVertically,
@@ -389,12 +395,12 @@ private fun PinnedLabel() {
         modifier              = Modifier.padding(bottom = 4.dp)
     ) {
         Icon(Icons.Default.PushPin, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(14.dp))
-        Text("Pin qilingan", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
     }
 }
 
 @Composable
-private fun NoteEmptyPlaceholder() {
+private fun NoteEmptyPlaceholder(noNotes: String, noNotesHint: String) {
     val c = MaterialTheme.appColors
     Column(
         modifier            = Modifier.fillMaxWidth().padding(top = 64.dp),
@@ -402,8 +408,8 @@ private fun NoteEmptyPlaceholder() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null, tint = c.textHint, modifier = Modifier.size(64.dp))
-        Text("Hali eslatma yo'q", style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
-        Text("FAB orqali birinchi eslatmani qo'shing", style = MaterialTheme.typography.bodySmall, color = c.textHint)
+        Text(noNotes,     style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
+        Text(noNotesHint, style = MaterialTheme.typography.bodySmall,  color = c.textHint)
     }
 }
 

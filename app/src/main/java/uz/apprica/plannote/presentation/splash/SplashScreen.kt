@@ -21,7 +21,7 @@ import uz.apprica.plannote.ui.theme.*
 @Composable
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
-    onNavigateToOnBoarding: () -> Unit,
+    onNavigateToLanguage: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel()
 ) {
     val isFirstLaunch by viewModel.isFirstLaunch.collectAsStateWithLifecycle()
@@ -54,7 +54,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         visible = true
         delay(2000L)   // 2 soniya
-        if (isFirstLaunch == true) onNavigateToOnBoarding()
+        if (isFirstLaunch == true) onNavigateToLanguage()
         else onNavigateToHome()
     }
 

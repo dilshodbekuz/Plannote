@@ -45,6 +45,7 @@ fun StreakScreen(
     viewModel: StreakViewModel = hiltViewModel()
 ) {
     val c     = MaterialTheme.appColors
+    val s     = MaterialTheme.strings
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
@@ -63,27 +64,45 @@ fun StreakScreen(
                 modifier = Modifier.size(36.dp).clip(CircleShape).background(c.card).clickable(onClick = onNavigateBack),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Orqaga", tint = c.textSecondary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = c.textSecondary, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(12.dp))
-            Text("🔥  Streak va Faollik", style = MaterialTheme.typography.headlineSmall, color = c.textPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                text       = "🔥  ${s.streakAndActivity}",
+                style      = MaterialTheme.typography.headlineSmall,
+                color      = c.textPrimary,
+                fontWeight = FontWeight.Bold
+            )
         }
 
-        HeroStreakCard(currentStreak = state.currentStreak, bestStreak = state.bestStreak, weeklyActivity = state.weeklyActivity)
+        HeroStreakCard(
+            currentStreak  = state.currentStreak,
+            bestStreak     = state.bestStreak,
+            weeklyActivity = state.weeklyActivity,
+            daysLabel      = s.days,
+            ketmaKet       = s.ketmaKet,
+            rekord         = s.rekord,
+            lastSevenDays  = s.lastSevenDays,
+            dayAbbrs       = s.dayAbbreviations
+        )
 
         if (state.weeklyTaskStats.isNotEmpty()) {
-            StreakSectionCard(title = "Haftalik vazifa faolligi") { WeeklyCanvasBarChart(days = state.weeklyTaskStats) }
+            StreakSectionCard(title = s.weeklyTaskActivity) {
+                WeeklyCanvasBarChart(days = state.weeklyTaskStats)
+            }
         }
 
         if (state.habitStats.isNotEmpty()) {
-            StreakSectionCard(title = "Odat tracker") {
-                StreakHabitHeader()
+            StreakSectionCard(title = s.habitTracker) {
+                StreakHabitHeader(dayAbbrs = s.dayAbbreviations)
                 HorizontalDivider(color = MaterialTheme.appColors.divider, modifier = Modifier.padding(vertical = 4.dp))
-                state.habitStats.forEach { hs -> StreakHabitDotRow(habitStats = hs) }
+                state.habitStats.forEach { hs -> StreakHabitDotRow(habitStats = hs, daysLabel = s.days) }
             }
         }
 
-        StreakSectionCard(title = "Haftalik kayfiyat") { StreakMoodRow(moodHistory = state.moodHistory) }
+        StreakSectionCard(title = s.weeklyMood) {
+            StreakMoodRow(moodHistory = state.moodHistory, noMoodYet = s.noMoodYet, dayAbbrs = s.dayAbbreviations)
+        }
 
         Spacer(Modifier.height(16.dp))
     }
@@ -92,7 +111,16 @@ fun StreakScreen(
 // ── Hero Streak Card ──────────────────────────────────────────────────────────
 
 @Composable
-private fun HeroStreakCard(currentStreak: Int, bestStreak: Int, weeklyActivity: List<Boolean>) {
+private fun HeroStreakCard(
+    currentStreak: Int,
+    bestStreak: Int,
+    weeklyActivity: List<Boolean>,
+    daysLabel: String,
+    ketmaKet: String,
+    rekord: String,
+    lastSevenDays: String,
+    dayAbbrs: List<String>
+) {
     val c = MaterialTheme.appColors
     Box(
         modifier = Modifier
@@ -107,25 +135,25 @@ private fun HeroStreakCard(currentStreak: Int, bestStreak: Int, weeklyActivity: 
                     Icon(Icons.Default.Whatshot, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(40.dp))
                     Spacer(Modifier.height(4.dp))
                     Text("$currentStreak", style = MaterialTheme.typography.displaySmall, color = c.textPrimary, fontWeight = FontWeight.ExtraBold)
-                    Text("kun",            style = MaterialTheme.typography.bodyMedium,   color = c.textSecondary)
+                    Text(daysLabel,        style = MaterialTheme.typography.bodyMedium,   color = c.textSecondary)
                     Spacer(Modifier.height(2.dp))
-                    Text("Ketma-ket",      style = MaterialTheme.typography.labelSmall,  color = AccentAmber)
+                    Text(ketmaKet,         style = MaterialTheme.typography.labelSmall,   color = AccentAmber)
                 }
                 Box(modifier = Modifier.height(80.dp).width(1.dp).background(c.divider))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(40.dp))
                     Spacer(Modifier.height(4.dp))
                     Text("$bestStreak", style = MaterialTheme.typography.displaySmall, color = AccentAmber, fontWeight = FontWeight.ExtraBold)
-                    Text("kun",          style = MaterialTheme.typography.bodyMedium,  color = c.textSecondary)
+                    Text(daysLabel,     style = MaterialTheme.typography.bodyMedium,   color = c.textSecondary)
                     Spacer(Modifier.height(2.dp))
-                    Text("Rekord",       style = MaterialTheme.typography.labelSmall, color = c.textHint)
+                    Text(rekord,        style = MaterialTheme.typography.labelSmall,   color = c.textHint)
                 }
             }
 
             HorizontalDivider(color = c.divider.copy(alpha = 0.6f))
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("So'nggi 7 kun", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
+                Text(lastSevenDays, style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     weeklyActivity.forEachIndexed { index, active ->
                         val isToday = index == weeklyActivity.lastIndex
@@ -137,7 +165,7 @@ private fun HeroStreakCard(currentStreak: Int, bestStreak: Int, weeklyActivity: 
                                     .background(when { isToday && active -> AccentAmber; active -> PrimaryTeal; else -> c.cardAlt })
                             )
                             Text(
-                                text       = realDayLabel(index),
+                                text       = realDayLabel(index, dayAbbrs),
                                 fontSize   = 9.sp,
                                 color      = when { isToday -> AccentAmber; active -> c.textSecondary; else -> c.textHint },
                                 fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal
@@ -201,12 +229,12 @@ private fun WeeklyCanvasBarChart(days: List<TaskDayStats>) {
 // ── Habit Tracker ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun StreakHabitHeader() {
+private fun StreakHabitHeader(dayAbbrs: List<String>) {
     val c = MaterialTheme.appColors
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Spacer(Modifier.width(160.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf("D", "S", "C", "P", "J", "Sh", "Y").forEach { lbl ->
+            dayAbbrs.forEach { lbl ->
                 Text(lbl, style = MaterialTheme.typography.labelSmall, color = c.textHint, modifier = Modifier.width(16.dp), fontSize = 9.sp)
             }
         }
@@ -214,14 +242,14 @@ private fun StreakHabitHeader() {
 }
 
 @Composable
-private fun StreakHabitDotRow(habitStats: HabitStats) {
+private fun StreakHabitDotRow(habitStats: HabitStats, daysLabel: String) {
     val c = MaterialTheme.appColors
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(habitStats.iconEmoji, fontSize = 18.sp, modifier = Modifier.width(28.dp))
         Spacer(Modifier.width(6.dp))
         Column(modifier = Modifier.width(120.dp)) {
             Text(habitStats.habitName, style = MaterialTheme.typography.bodySmall, color = c.textPrimary, maxLines = 1, fontWeight = FontWeight.Medium)
-            Text("🔥 ${habitStats.currentStreak} kun · ${(habitStats.percentage * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
+            Text("🔥 ${habitStats.currentStreak} $daysLabel · ${(habitStats.percentage * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = AccentAmber)
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -239,7 +267,11 @@ private val SMOOD_COLORS = listOf(Color(0xFFEF5350), Color(0xFFBDBDBD), Color(0x
 private val MOOD_DATE_FMT = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
 @Composable
-private fun StreakMoodRow(moodHistory: Map<String, Int>) {
+private fun StreakMoodRow(
+    moodHistory: Map<String, Int>,
+    noMoodYet: String,
+    dayAbbrs: List<String>
+) {
     val c = MaterialTheme.appColors
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -257,7 +289,7 @@ private fun StreakMoodRow(moodHistory: Map<String, Int>) {
                         if (mood != null) Text(SMOOD_EMOJIS[mood - 1], fontSize = 20.sp)
                         else Text("·", fontSize = 20.sp, color = c.textHint)
                     }
-                    Text(realDayLabel(index), fontSize = 9.sp, color = if (isToday) AccentAmber else c.textHint, fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal)
+                    Text(realDayLabel(index, dayAbbrs), fontSize = 9.sp, color = if (isToday) AccentAmber else c.textHint, fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal)
                 }
             }
         }
@@ -266,7 +298,7 @@ private fun StreakMoodRow(moodHistory: Map<String, Int>) {
             moodHistory[MOOD_DATE_FMT.format(cal.time)] != null
         }
         if (!anyMood) {
-            Text("Hali kayfiyat belgilanmagan. Home ekranidan belgilang!", style = MaterialTheme.typography.labelSmall, color = c.textHint)
+            Text(noMoodYet, style = MaterialTheme.typography.labelSmall, color = c.textHint)
         }
     }
 }
@@ -287,17 +319,18 @@ private fun StreakSectionCard(title: String, content: @Composable ColumnScope.()
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-private fun realDayLabel(index: Int): String {
+private fun realDayLabel(index: Int, abbrs: List<String>): String {
     val daysAgo = 6 - index
     val cal     = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -daysAgo) }
-    return when (cal.get(Calendar.DAY_OF_WEEK)) {
-        Calendar.MONDAY    -> "Du"
-        Calendar.TUESDAY   -> "Se"
-        Calendar.WEDNESDAY -> "Ch"
-        Calendar.THURSDAY  -> "Pa"
-        Calendar.FRIDAY    -> "Ju"
-        Calendar.SATURDAY  -> "Sh"
-        Calendar.SUNDAY    -> "Ya"
-        else               -> "?"
+    val dayIdx  = when (cal.get(Calendar.DAY_OF_WEEK)) {
+        Calendar.MONDAY    -> 0
+        Calendar.TUESDAY   -> 1
+        Calendar.WEDNESDAY -> 2
+        Calendar.THURSDAY  -> 3
+        Calendar.FRIDAY    -> 4
+        Calendar.SATURDAY  -> 5
+        Calendar.SUNDAY    -> 6
+        else               -> 0
     }
+    return abbrs.getOrElse(dayIdx) { "?" }
 }

@@ -14,7 +14,8 @@ import javax.inject.Inject
 data class SettingsUiState(
     val isDarkMode: Boolean = true,
     val currentStreak: Int  = 0,
-    val bestStreak: Int     = 0
+    val bestStreak: Int     = 0,
+    val language: String    = "uz"
 )
 
 @HiltViewModel
@@ -25,12 +26,14 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsUiState> = combine(
         prefsDataStore.isDarkMode(),
         prefsDataStore.getStreak(),
-        prefsDataStore.getBestStreak()
-    ) { dark, streak, best ->
+        prefsDataStore.getBestStreak(),
+        prefsDataStore.getLanguage()
+    ) { dark, streak, best, lang ->
         SettingsUiState(
             isDarkMode    = dark,
             currentStreak = streak,
-            bestStreak    = best
+            bestStreak    = best,
+            language      = lang
         )
     }.stateIn(
         scope        = viewModelScope,
@@ -42,6 +45,12 @@ class SettingsViewModel @Inject constructor(
 
     fun setDarkMode(dark: Boolean) {
         viewModelScope.launch { prefsDataStore.setDarkMode(dark) }
+    }
+
+    // ── Language ──────────────────────────────────────────────────────────────
+
+    fun setLanguage(lang: String) {
+        viewModelScope.launch { prefsDataStore.setLanguage(lang) }
     }
 
     // ── Streak reset ──────────────────────────────────────────────────────────
