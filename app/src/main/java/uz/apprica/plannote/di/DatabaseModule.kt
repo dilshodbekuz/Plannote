@@ -28,7 +28,6 @@ object DatabaseModule {
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
         )
-            // Migration strategiyasi: produksionda AutoMigration yoki Migration klasslari qo'shiladi
             .fallbackToDestructiveMigration()
             .build()
 

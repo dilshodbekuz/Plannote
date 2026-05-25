@@ -33,10 +33,10 @@ val PriorityHigh    = Color(0xFFFF4444)   // qizil (avval pushti edi)
 
 // ── Note card palitasi ────────────────────────────────────────────────────────
 val NoteCardColors = listOf(
-    Color(0xFF1E2530),   // 0 – default
-    Color(0xFF1A2A35),   // 1 – ko'k
-    Color(0xFF2A1A35),   // 2 – binafsha
-    Color(0xFF1A352A),   // 3 – yashil
-    Color(0xFF352A1A),   // 4 – to'q sariq
-    Color(0xFF351A2A)    // 5 – pushti
+    Color(0xFF1E2530),   // 0 – default (kulrang)
+    Color(0xFF0D2E4A),   // 1 – ko'k
+    Color(0xFF2A1250),   // 2 – binafsha
+    Color(0xFF0D3D25),   // 3 – yashil
+    Color(0xFF3D2600),   // 4 – sariq-jigarrang
+    Color(0xFF45102A)    // 5 – pushti-qizil
 )

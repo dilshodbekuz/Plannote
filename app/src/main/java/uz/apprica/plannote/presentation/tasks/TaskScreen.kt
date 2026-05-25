@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -410,7 +411,7 @@ private fun EmptyTasksPlaceholder() {
         horizontalAlignment   = Alignment.CenterHorizontally,
         verticalArrangement   = Arrangement.spacedBy(8.dp)
     ) {
-        Text("✅", fontSize = 48.sp)
+        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = TextHint, modifier = Modifier.size(64.dp))
         Text(
             text  = "Bugun uchun vazifa yo'q",
             style = MaterialTheme.typography.titleSmall,

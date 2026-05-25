@@ -33,46 +33,28 @@ class NotificationHelper @Inject constructor(
         private const val MOTIVATION_CHANNEL_NAME = "Daily Motivation"
     }
 
-    // ── Channel setup ─────────────────────────────────────────────────────────
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannels() {
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE)
-                as NotificationManager
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         listOf(
-            NotificationChannel(
-                NOTES_CHANNEL_ID,
-                NOTES_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
+            NotificationChannel(NOTES_CHANNEL_ID, NOTES_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "Reminders for your saved notes"
                 enableVibration(true)
             },
-            NotificationChannel(
-                TASKS_CHANNEL_ID,
-                TASKS_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
+            NotificationChannel(TASKS_CHANNEL_ID, TASKS_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "Reminders for pending tasks"
                 enableVibration(true)
             },
-            NotificationChannel(
-                MOTIVATION_CHANNEL_ID,
-                MOTIVATION_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
+            NotificationChannel(MOTIVATION_CHANNEL_ID, MOTIVATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Daily motivational quotes every morning"
             }
         ).forEach(manager::createNotificationChannel)
     }
 
-    // ── Show helpers ──────────────────────────────────────────────────────────
-
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showNoteReminder(noteId: Long, title: String, content: String) {
         if (!canPost()) return
-
         val notification = NotificationCompat.Builder(context, NOTES_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title.ifBlank { "Note Reminder" })
@@ -82,35 +64,27 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
             .setContentIntent(mainActivityPendingIntent())
             .build()
-
-        NotificationManagerCompat.from(context)
-            .notify(notificationId("note", noteId), notification)
+        NotificationManagerCompat.from(context).notify(notificationId("note", noteId), notification)
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showTaskReminder(taskId: Long, title: String, description: String) {
         if (!canPost()) return
-
         val notification = NotificationCompat.Builder(context, TASKS_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title.ifBlank { "Task Reminder" })
             .setContentText(description.ifBlank { "You have a pending task" })
-            .setStyle(NotificationCompat.BigTextStyle().bigText(
-                description.ifBlank { "You have a pending task" }
-            ))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(description.ifBlank { "You have a pending task" }))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(mainActivityPendingIntent())
             .build()
-
-        NotificationManagerCompat.from(context)
-            .notify(notificationId("task", taskId), notification)
+        NotificationManagerCompat.from(context).notify(notificationId("task", taskId), notification)
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showDailyMotivation(quote: String) {
         if (!canPost()) return
-
         val notification = NotificationCompat.Builder(context, MOTIVATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Good morning! 🌅")
@@ -120,12 +94,8 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
             .setContentIntent(mainActivityPendingIntent())
             .build()
-
-        NotificationManagerCompat.from(context)
-            .notify(notificationId("motivation", 0L), notification)
+        NotificationManagerCompat.from(context).notify(notificationId("motivation", 0L), notification)
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private fun canPost(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -146,7 +116,6 @@ class NotificationHelper @Inject constructor(
         )
     }
 
-    /** Generates a stable unique notification ID from a type tag + entity id. */
     private fun notificationId(tag: String, id: Long): Int =
         (tag.hashCode() * 31 + id).toInt()
 }

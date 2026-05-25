@@ -11,10 +11,6 @@ import uz.apprica.plannote.worker.DailyReminderWorker
 import uz.apprica.plannote.worker.NoteReminderWorker
 import uz.apprica.plannote.worker.TaskReminderWorker
 
-/**
- * Receives exact alarm broadcasts and delegates to the appropriate WorkManager worker.
- * Using WorkManager ensures the work is done even if the app is killed right after the alarm fires.
- */
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -28,35 +24,24 @@ class AlarmReceiver : BroadcastReceiver() {
         when (type) {
             AlarmScheduler.TYPE_NOTE -> {
                 val data = Data.Builder()
-                    .putLong(NoteReminderWorker.KEY_NOTE_ID, itemId)
+                    .putLong(NoteReminderWorker.KEY_NOTE_ID,  itemId)
                     .putString(NoteReminderWorker.KEY_TITLE,   title)
                     .putString(NoteReminderWorker.KEY_CONTENT, content)
                     .build()
-
-                val request = OneTimeWorkRequestBuilder<NoteReminderWorker>()
-                    .setInputData(data)
-                    .build()
-
-                workManager.enqueue(request)
+                workManager.enqueue(OneTimeWorkRequestBuilder<NoteReminderWorker>().setInputData(data).build())
             }
 
             AlarmScheduler.TYPE_TASK -> {
                 val data = Data.Builder()
-                    .putLong(TaskReminderWorker.KEY_TASK_ID,     itemId)
+                    .putLong(TaskReminderWorker.KEY_TASK_ID,      itemId)
                     .putString(TaskReminderWorker.KEY_TITLE,       title)
                     .putString(TaskReminderWorker.KEY_DESCRIPTION, content)
                     .build()
-
-                val request = OneTimeWorkRequestBuilder<TaskReminderWorker>()
-                    .setInputData(data)
-                    .build()
-
-                workManager.enqueue(request)
+                workManager.enqueue(OneTimeWorkRequestBuilder<TaskReminderWorker>().setInputData(data).build())
             }
 
             AlarmScheduler.TYPE_MOTIVATION -> {
-                val request = OneTimeWorkRequestBuilder<DailyReminderWorker>().build()
-                workManager.enqueue(request)
+                workManager.enqueue(OneTimeWorkRequestBuilder<DailyReminderWorker>().build())
             }
         }
     }

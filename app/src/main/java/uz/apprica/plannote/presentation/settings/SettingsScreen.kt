@@ -16,7 +16,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import uz.apprica.plannote.ui.theme.*
@@ -26,13 +25,10 @@ import uz.apprica.plannote.ui.theme.*
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // ── Dialog holatlari ────────────────────────────────────────────────────
     var showResetDialog   by remember { mutableStateOf(false) }
-    var showTimePicker    by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     var snackMsg          by remember { mutableStateOf<String?>(null) }
 
-    // Snackbar ko'rsatish
     LaunchedEffect(snackMsg) {
         snackMsg?.let {
             snackbarHostState.showSnackbar(it)
@@ -41,8 +37,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     }
 
     Scaffold(
-        containerColor    = DarkBackground,
-        snackbarHost      = { SnackbarHost(snackbarHostState) }
+        containerColor = DarkBackground,
+        snackbarHost   = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
 
         Column(
@@ -70,66 +66,46 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 bestStreak    = state.bestStreak
             )
 
-            // ── Bildirishnomalar ──────────────────────────────────────────────
-            SettingsSection(title = "Bildirishnomalar") {
+            // ── Ko'rinish + Streak ────────────────────────────────────────────
+            SettingsSection {
                 ToggleRow(
-                    icon    = Icons.Default.Notifications,
-                    title   = "Bildirishnomalar",
-                    subtitle = "Kunlik eslatmalar va motivatsiya",
-                    checked = state.notificationsEnabled,
-                    onCheckedChange = { viewModel.setNotificationsEnabled(it) }
-                )
-                if (state.notificationsEnabled) {
-                    HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
-                    ClickableRow(
-                        icon     = Icons.Default.Schedule,
-                        title    = "Eslatish vaqti",
-                        subtitle = "%02d:%02d".format(state.reminderHour, state.reminderMinute),
-                        onClick  = { showTimePicker = true }
-                    )
-                }
-            }
-
-            // ── Ko'rinish ─────────────────────────────────────────────────────
-            SettingsSection(title = "Ko'rinish") {
-                ToggleRow(
-                    icon     = if (state.isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
-                    title    = "Tungi rejim",
-                    subtitle = if (state.isDarkMode) "Qorong'i fon" else "Yorug' fon",
-                    checked  = state.isDarkMode,
+                    icon            = if (state.isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                    title           = "Tungi rejim",
+                    subtitle        = if (state.isDarkMode) "Qorong'i fon" else "Yorug' fon",
+                    checked         = state.isDarkMode,
                     onCheckedChange = { viewModel.setDarkMode(it) }
                 )
-            }
-
-            // ── Streak ────────────────────────────────────────────────────────
-            SettingsSection(title = "Streak") {
+                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
                 ClickableRow(
-                    icon     = Icons.Default.RestartAlt,
-                    title    = "Streakni nollashtirish",
-                    subtitle = "Joriy: ${state.currentStreak} kun",
-                    onClick  = { showResetDialog = true },
+                    icon      = Icons.Default.RestartAlt,
+                    title     = "Streakni nollashtirish",
+                    subtitle  = "Joriy: ${state.currentStreak} kun",
+                    onClick   = { showResetDialog = true },
                     tintColor = ErrorRed
                 )
             }
 
-            // ── Ilova haqida ──────────────────────────────────────────────────
-            SettingsSection(title = "Ilova haqida") {
+            // ── Versiya + Ishlab chiquvchi ────────────────────────────────────
+            SettingsSection {
                 InfoRow(
-                    icon     = Icons.Default.Info,
-                    title    = "Versiya",
-                    value    = "1.0.0"
+                    icon  = Icons.Default.Info,
+                    title = "Versiya",
+                    value = "1.0.0"
                 )
                 HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
                 InfoRow(
-                    icon     = Icons.Default.Code,
-                    title    = "Ishlab chiquvchi",
-                    value    = "Plannote Team"
+                    icon  = Icons.Default.Code,
+                    title = "Ishlab chiquvchi",
+                    value = "Plannote Team"
                 )
-                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
+            }
+
+            // ── Min. Android versiyasi ────────────────────────────────────────
+            SettingsSection {
                 InfoRow(
-                    icon     = Icons.Default.Star,
-                    title    = "Min. Android versiyasi",
-                    value    = "Android 7.0+"
+                    icon  = Icons.Default.Android,
+                    title = "Min. Android versiyasi",
+                    value = "Android 7.0+"
                 )
             }
 
@@ -140,8 +116,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     // ── Streak reset dialog ───────────────────────────────────────────────────
     if (showResetDialog) {
         AlertDialog(
-            onDismissRequest  = { showResetDialog = false },
-            containerColor    = DarkCard,
+            onDismissRequest = { showResetDialog = false },
+            containerColor   = DarkCard,
             title = {
                 Text("Streakni nollashtirish", color = TextPrimary, fontWeight = FontWeight.Bold)
             },
@@ -169,44 +145,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             }
         )
     }
-
-    // ── Vaqt tanlash dialog ───────────────────────────────────────────────────
-    if (showTimePicker) {
-        TimePickerDialog(
-            initialHour   = state.reminderHour,
-            initialMinute = state.reminderMinute,
-            onConfirm     = { h, m ->
-                viewModel.setReminderTime(h, m)
-                showTimePicker = false
-                snackMsg = "Eslatish vaqti yangilandi: %02d:%02d".format(h, m)
-            },
-            onDismiss     = { showTimePicker = false }
-        )
-    }
 }
 
-// ── Settings Section ──────────────────────────────────────────────────────────
+// ── Settings Section (bitta karta) ────────────────────────────────────────────
 
 @Composable
 private fun SettingsSection(
-    title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-        Text(
-            text     = title,
-            style    = MaterialTheme.typography.labelMedium,
-            color    = PrimaryTeal,
-            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(DarkCard)
-        ) {
-            Column { content() }
-        }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(DarkCard)
+    ) {
+        Column { content() }
     }
 }
 
@@ -229,15 +182,15 @@ private fun ToggleRow(
         Icon(icon, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = FontWeight.Medium)
+            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = TextPrimary,   fontWeight = FontWeight.Medium)
             Text(subtitle, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
         }
         Switch(
             checked         = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor  = DarkBackground,
-                checkedTrackColor  = PrimaryTeal,
+                checkedThumbColor   = DarkBackground,
+                checkedTrackColor   = PrimaryTeal,
                 uncheckedThumbColor = TextHint,
                 uncheckedTrackColor = DarkCardAlt
             )
@@ -265,7 +218,7 @@ private fun ClickableRow(
         Icon(icon, contentDescription = null, tint = tintColor, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = FontWeight.Medium)
+            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = TextPrimary,   fontWeight = FontWeight.Medium)
             Text(subtitle, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
         }
         Icon(
@@ -294,7 +247,7 @@ private fun InfoRow(
         Icon(icon, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(14.dp))
         Text(title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodySmall, color = TextHint)
+        Text(value, style = MaterialTheme.typography.bodySmall,  color = TextHint)
     }
 }
 
@@ -314,7 +267,7 @@ private fun StreakInfoCard(currentStreak: Int, bestStreak: Int) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("🔥", fontSize = 28.sp)
+                Icon(Icons.Default.Whatshot, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(36.dp))
                 Text(
                     text       = "$currentStreak",
                     style      = MaterialTheme.typography.titleLarge,
@@ -324,11 +277,13 @@ private fun StreakInfoCard(currentStreak: Int, bestStreak: Int) {
                 Text("Joriy streak", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
             }
             HorizontalDivider(
-                modifier  = Modifier.height(60.dp).width(1.dp),
-                color     = DividerColor
+                modifier = Modifier
+                    .height(60.dp)
+                    .width(1.dp),
+                color    = DividerColor
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("🏆", fontSize = 28.sp)
+                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(36.dp))
                 Text(
                     text       = "$bestStreak",
                     style      = MaterialTheme.typography.titleLarge,
@@ -339,59 +294,4 @@ private fun StreakInfoCard(currentStreak: Int, bestStreak: Int) {
             }
         }
     }
-}
-
-// ── Time Picker Dialog ────────────────────────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TimePickerDialog(
-    initialHour: Int,
-    initialMinute: Int,
-    onConfirm: (Int, Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val state = rememberTimePickerState(
-        initialHour   = initialHour,
-        initialMinute = initialMinute,
-        is24Hour      = true
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor   = DarkCard,
-        title = {
-            Text(
-                "Eslatish vaqtini tanlang",
-                color      = TextPrimary,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            TimePicker(
-                state  = state,
-                colors = TimePickerDefaults.colors(
-                    clockDialColor           = DarkBackground,
-                    clockDialUnselectedContentColor = TextSecondary,
-                    clockDialSelectedContentColor   = DarkBackground,
-                    selectorColor            = PrimaryTeal,
-                    containerColor           = DarkCard,
-                    timeSelectorSelectedContainerColor   = PrimaryTeal.copy(alpha = 0.2f),
-                    timeSelectorUnselectedContainerColor = DarkCardAlt,
-                    timeSelectorSelectedContentColor     = PrimaryTeal,
-                    timeSelectorUnselectedContentColor   = TextSecondary
-                )
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(state.hour, state.minute) }) {
-                Text("Saqlash", color = PrimaryTeal, fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Bekor", color = TextSecondary)
-            }
-        }
-    )
 }

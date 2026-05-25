@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -154,7 +156,7 @@ private fun HeroStreakCard(
             ) {
                 // Joriy streak
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🔥", fontSize = 30.sp)
+                    Icon(Icons.Default.Whatshot, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(40.dp))
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text       = "$currentStreak",
@@ -185,7 +187,7 @@ private fun HeroStreakCard(
 
                 // Rekord streak
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🏆", fontSize = 30.sp)
+                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(40.dp))
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text       = "$bestStreak",

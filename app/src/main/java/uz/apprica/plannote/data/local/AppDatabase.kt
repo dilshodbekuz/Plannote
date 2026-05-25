@@ -39,11 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        /**
-         * Hilt bilan ishlatilganda bu metod ishlatilmaydi —
-         * di/DatabaseModule.kt orqali inject qilinadi.
-         * Faqat test yoki standalone holatlarda qo'llang.
-         */
         fun getInstance(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }

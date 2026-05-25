@@ -30,6 +30,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -151,7 +154,7 @@ private fun QuoteCard(quote: String, onRefresh: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("💡", fontSize = 14.sp)
+                Icon(Icons.Default.Lightbulb, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = "Kunlik ilhom",
@@ -256,7 +259,7 @@ private fun StreakCard(streak: Int, bestStreak: Int, onClick: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text("🏆", fontSize = 13.sp)
+                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = TextHint, modifier = Modifier.size(16.dp))
                     Text(
                         text = "Rekord: $bestStreak kun",
                         style = MaterialTheme.typography.labelMedium,
@@ -273,7 +276,7 @@ private fun StreakCard(streak: Int, bestStreak: Int, onClick: () -> Unit) {
                         .background(AccentAmber.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🔥", fontSize = 32.sp)
+                    Icon(Icons.Default.Whatshot, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(40.dp))
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(

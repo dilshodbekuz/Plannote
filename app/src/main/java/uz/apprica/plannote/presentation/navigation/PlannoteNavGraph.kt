@@ -27,17 +27,12 @@ import uz.apprica.plannote.presentation.streak.StreakScreen
 import uz.apprica.plannote.presentation.tasks.TaskScreen
 import uz.apprica.plannote.ui.theme.DarkBackground
 
-// ── Animatsiya konstantlari ───────────────────────────────────────────────────
-// Tab navigatsiya: animatsiyasiz (tez va toza)
-// Faqat Splash/OnBoarding o'z animatsiyasiga ega
-
 private val slideInRight: EnterTransition =
     slideInHorizontally(tween(220)) { it } + fadeIn(tween(220))
 
 private val slideOutLeft: ExitTransition =
     slideOutHorizontally(tween(220)) { -it } + fadeOut(tween(220))
 
-// StreakScreen — o'ngdan kirib, o'ngga chiqadi (push/pop pattern)
 private val pushIn: EnterTransition =
     slideInHorizontally(tween(220)) { it } + fadeIn(tween(220))
 
@@ -50,7 +45,6 @@ private val popIn: EnterTransition =
 private val popOut: ExitTransition =
     slideOutHorizontally(tween(220)) { it } + fadeOut(tween(220))
 
-// Bu ekranlarda BottomNavBar ko'rinmasligi kerak
 private val noNavBarRoutes = setOf(
     Screen.Splash.route,
     Screen.OnBoarding.route,
@@ -73,21 +67,19 @@ fun PlannoteNavGraph() {
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController,
+            navController    = navController,
             startDestination = Screen.Splash.route,
-            modifier = Modifier.padding(innerPadding),
-            // Tab navigatsiyada animatsiya yo'q — tez va toza
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None },
-            popEnterTransition = { EnterTransition.None },
-            popExitTransition = { ExitTransition.None }
+            modifier         = Modifier.padding(innerPadding),
+            enterTransition  = { EnterTransition.None },
+            exitTransition   = { ExitTransition.None },
+            popEnterTransition  = { EnterTransition.None },
+            popExitTransition   = { ExitTransition.None }
         ) {
-
             // ── Splash ────────────────────────────────────────────────────────
             composable(
-                route = Screen.Splash.route,
+                route           = Screen.Splash.route,
                 enterTransition = { fadeIn(tween(400)) },
-                exitTransition = { fadeOut(tween(400)) }
+                exitTransition  = { fadeOut(tween(400)) }
             ) {
                 SplashScreen(
                     onNavigateToHome = {
@@ -105,9 +97,9 @@ fun PlannoteNavGraph() {
 
             // ── OnBoarding ────────────────────────────────────────────────────
             composable(
-                route = Screen.OnBoarding.route,
+                route           = Screen.OnBoarding.route,
                 enterTransition = { slideInRight },
-                exitTransition = { slideOutLeft }
+                exitTransition  = { slideOutLeft }
             ) {
                 OnBoardingScreen(
                     onFinish = {
@@ -121,8 +113,8 @@ fun PlannoteNavGraph() {
             // ── Home ──────────────────────────────────────────────────────────
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onNavigateToTasks = { navController.navigate(Screen.Tasks.route) },
-                    onNavigateToNotes = { navController.navigate(Screen.Notes.route) },
+                    onNavigateToTasks  = { navController.navigate(Screen.Tasks.route) },
+                    onNavigateToNotes  = { navController.navigate(Screen.Notes.route) },
                     onNavigateToStreak = { navController.navigate(Screen.Streak.route) }
                 )
             }
@@ -130,21 +122,21 @@ fun PlannoteNavGraph() {
             // ── Tasks ─────────────────────────────────────────────────────────
             composable(Screen.Tasks.route) { TaskScreen() }
 
-            // ── Notes ─────────────────────────────────────────────────────────
+            // ── Notes (Eslatmalar) ────────────────────────────────────────────
             composable(Screen.Notes.route) { NoteScreen() }
 
-            // ── Streak (Home dan o'ngdan kirib, orqaga chiqadi) ───────────────
+            // ── Streak ────────────────────────────────────────────────────────
             composable(
-                route = Screen.Streak.route,
-                enterTransition = { pushIn },
-                exitTransition = { ExitTransition.None },
+                route              = Screen.Streak.route,
+                enterTransition    = { pushIn },
+                exitTransition     = { ExitTransition.None },
                 popEnterTransition = { popIn },
-                popExitTransition = { popOut }
+                popExitTransition  = { popOut }
             ) {
                 StreakScreen(onNavigateBack = { navController.popBackStack() })
             }
 
-            // ── Stats (eski route, saqlanadi — to'g'ridan navigatsiya mumkin) ─
+            // ── Stats ─────────────────────────────────────────────────────────
             composable(Screen.Stats.route) { StatsScreen() }
 
             // ── Settings ──────────────────────────────────────────────────────

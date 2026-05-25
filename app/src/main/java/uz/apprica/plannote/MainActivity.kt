@@ -19,7 +19,7 @@ class MainActivity : Hilt_MainActivity() {
     private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen()   // darhol yopiladi, custom splash ko'rinadi
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

@@ -2,18 +2,17 @@
 <resources>
 
     <!-- App asosiy temi (Compose ishlatgani uchun minimalistik) -->
-    <style name="Theme.Plannote" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Plannote" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
 
-    <!-- Splash screen temi: activity ko'rsatilishidan oldin ko'rinadigan ekran -->
+    <!-- Sistema splash ko'rinmas: fon = qora, ikonka = shaffof -->
     <style name="Theme.Plannote.Starting" parent="Theme.SplashScreen">
-        <!-- Splash screen orqa foni: app asosiy rangi -->
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <!-- Ikonka markazda chiqadi (adaptive icon ishlatiladi) -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-        <!-- Animatsiya davomiyligi (ms, max 1000ms) -->
-        <item name="windowSplashScreenAnimationDuration">800</item>
-        <!-- Splash tugagandan keyin qo'llaniladigan tema -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_transparent</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
         <item name="postSplashScreenTheme">@style/Theme.Plannote</item>
     </style>
+
 
 </resources>
