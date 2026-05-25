@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import uz.apprica.plannote.domain.model.Note
-import uz.apprica.plannote.ui.theme.*
+import uz.apprica.plannote.ui.theme.AccentAmber
+import uz.apprica.plannote.ui.theme.ErrorRed
+import uz.apprica.plannote.ui.theme.appColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,18 +42,19 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val pinnedNotes by viewModel.pinnedNotes.collectAsStateWithLifecycle()
+    val c             = MaterialTheme.appColors
+    val searchQuery   by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val pinnedNotes   by viewModel.pinnedNotes.collectAsStateWithLifecycle()
     val unpinnedNotes by viewModel.unpinnedNotes.collectAsStateWithLifecycle()
-    val showAddSheet by viewModel.showAddSheet.collectAsStateWithLifecycle()
-    val allNotes by viewModel.notes.collectAsStateWithLifecycle()
+    val showAddSheet  by viewModel.showAddSheet.collectAsStateWithLifecycle()
+    val allNotes      by viewModel.notes.collectAsStateWithLifecycle()
 
     var selectedNote by remember { mutableStateOf<Note?>(null) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(c.background)
     ) {
         Column(
             modifier = Modifier
@@ -59,80 +62,61 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
                 .statusBarsPadding()
                 .padding(horizontal = 20.dp)
         ) {
-            // ── Header ────────────────────────────────────────────────────
             Text(
-                text = "Eslatmalar",
-                style = MaterialTheme.typography.headlineSmall,
-                color = TextPrimary,
+                text       = "Eslatmalar",
+                style      = MaterialTheme.typography.headlineSmall,
+                color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(Modifier.height(12.dp))
 
-            // ── Search bar ───────────────────────────────────────────────
             OutlinedTextField(
-                value = searchQuery,
+                value         = searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
-                placeholder = { Text("Eslatmalarni qidirish...", color = TextHint) },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        null,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                placeholder   = { Text("Eslatmalarni qidirish...", color = c.textHint) },
+                leadingIcon   = {
+                    Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(20.dp))
                 },
                 trailingIcon = if (searchQuery.isNotEmpty()) ({
                     IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                        Icon(
-                            Icons.Default.Clear,
-                            null,
-                            tint = TextSecondary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(Icons.Default.Clear, null, tint = c.textSecondary, modifier = Modifier.size(18.dp))
                     }
                 }) else null,
-                modifier = Modifier.fillMaxWidth(),
-                colors = searchFieldColors(),
+                modifier   = Modifier.fillMaxWidth(),
+                colors     = noteSearchColors(),
                 singleLine = true,
-                shape = RoundedCornerShape(14.dp)
+                shape      = RoundedCornerShape(14.dp)
             )
 
             Spacer(Modifier.height(16.dp))
 
-            // ── Content ───────────────────────────────────────────────────
             if (allNotes.isEmpty()) {
-                EmptyNotesPlaceholder()
+                NoteEmptyPlaceholder()
             } else {
                 val columns = if (allNotes.size == 1) 1 else 2
-
                 LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(columns),
+                    columns               = StaggeredGridCells.Fixed(columns),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalItemSpacing = 10.dp,
-                    contentPadding = PaddingValues(bottom = 88.dp)
+                    verticalItemSpacing   = 10.dp,
+                    contentPadding        = PaddingValues(bottom = 88.dp)
                 ) {
-                    // Pinned section header — to'liq qatorni egallaydi
                     if (pinnedNotes.isNotEmpty() && searchQuery.isBlank()) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            SectionLabel()
-                        }
+                        item(span = StaggeredGridItemSpan.FullLine) { PinnedLabel() }
                         items(pinnedNotes, key = { "pinned_${it.id}" }) { note ->
                             NoteCard(
-                                note = note,
-                                onClick = { selectedNote = note },
-                                onDelete = { viewModel.deleteNote(note) },
+                                note        = note,
+                                onClick     = { selectedNote = note },
+                                onDelete    = { viewModel.deleteNote(note) },
                                 onTogglePin = { viewModel.togglePin(note) }
                             )
                         }
                     }
-
-                    // Unpinned notes — label yo'q
                     items(unpinnedNotes, key = { "note_${it.id}" }) { note ->
                         NoteCard(
-                            note = note,
-                            onClick = { selectedNote = note },
-                            onDelete = { viewModel.deleteNote(note) },
+                            note        = note,
+                            onClick     = { selectedNote = note },
+                            onDelete    = { viewModel.deleteNote(note) },
                             onTogglePin = { viewModel.togglePin(note) }
                         )
                     }
@@ -140,35 +124,25 @@ fun NoteScreen(viewModel: NoteViewModel = hiltViewModel()) {
             }
         }
 
-        // ── FAB ───────────────────────────────────────────────────────────
         FloatingActionButton(
-            onClick = viewModel::showAddSheet,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
+            onClick        = viewModel::showAddSheet,
+            modifier       = Modifier.align(Alignment.BottomEnd).padding(24.dp),
             containerColor = AccentAmber,
-            contentColor = DarkBackground,
-            shape = CircleShape
+            contentColor   = c.background,
+            shape          = CircleShape
         ) {
             Icon(Icons.Default.Add, contentDescription = "Eslatma qo'shish")
         }
 
-        // ── Add bottom sheet ──────────────────────────────────────────────
         if (showAddSheet) {
             AddNoteBottomSheet(
                 onDismiss = viewModel::hideAddSheet,
-                onConfirm = { title, content, color ->
-                    viewModel.addNote(title, content, color)
-                }
+                onConfirm = { title, content, color -> viewModel.addNote(title, content, color) }
             )
         }
 
-        // ── Detail bottom sheet ───────────────────────────────────────────
         selectedNote?.let { note ->
-            NoteDetailBottomSheet(
-                note = note,
-                onDismiss = { selectedNote = null }
-            )
+            NoteDetailBottomSheet(note = note, onDismiss = { selectedNote = null })
         }
     }
 }
@@ -183,7 +157,8 @@ fun NoteCard(
     onTogglePin: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = NoteCardColors.getOrNull(note.color) ?: DarkCard
+    val c      = MaterialTheme.appColors
+    val cardBg = c.noteCardColors.getOrNull(note.color) ?: c.card
 
     Box(
         modifier = modifier
@@ -194,67 +169,52 @@ fun NoteCard(
             .padding(12.dp)
     ) {
         Column {
-            // ── Sarlavha ──────────────────────────────────────────────────────
             if (note.title.isNotBlank()) {
                 Text(
-                    text = note.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = TextPrimary,
+                    text       = note.title,
+                    style      = MaterialTheme.typography.titleSmall,
+                    color      = c.textPrimary,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines   = 2,
+                    overflow   = TextOverflow.Ellipsis
                 )
             }
-
-            // ── Kontent ───────────────────────────────────────────────────────
             if (note.content.isNotBlank()) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = note.preview,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
+                    text     = note.preview,
+                    style    = MaterialTheme.typography.bodySmall,
+                    color    = c.textSecondary,
                     maxLines = 6,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-
             Spacer(Modifier.height(8.dp))
-
-            // ── Sana + Iconlar (pastda) ───────────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment     = Alignment.CenterVertically
             ) {
                 Text(
-                    text = SimpleDateFormat(
-                        "d MMM",
-                        Locale.getDefault()
-                    ).format(Date(note.updatedAt)),
+                    text  = SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(note.updatedAt)),
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextHint
+                    color = c.textHint
                 )
                 Row {
-                    IconButton(
-                        onClick = onTogglePin,
-                        modifier = Modifier.size(36.dp)
-                    ) {
+                    IconButton(onClick = onTogglePin, modifier = Modifier.size(36.dp)) {
                         Icon(
-                            imageVector = Icons.Default.PushPin,
+                            imageVector        = Icons.Default.PushPin,
                             contentDescription = "Pin",
-                            tint = if (note.isPinned) AccentAmber else TextHint,
-                            modifier = Modifier.size(22.dp)
+                            tint               = if (note.isPinned) AccentAmber else c.textHint,
+                            modifier           = Modifier.size(22.dp)
                         )
                     }
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(36.dp)
-                    ) {
+                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            imageVector        = Icons.Default.Delete,
                             contentDescription = "O'chirish",
-                            tint = ErrorRed.copy(alpha = 0.5f),
-                            modifier = Modifier.size(22.dp)
+                            tint               = ErrorRed.copy(alpha = 0.5f),
+                            modifier           = Modifier.size(22.dp)
                         )
                     }
                 }
@@ -267,18 +227,16 @@ fun NoteCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteDetailBottomSheet(
-    note: Note,
-    onDismiss: () -> Unit
-) {
+fun NoteDetailBottomSheet(note: Note, onDismiss: () -> Unit) {
+    val c          = MaterialTheme.appColors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val cardBg = NoteCardColors.getOrNull(note.color) ?: DarkSurface
+    val cardBg     = c.noteCardColors.getOrNull(note.color) ?: c.surface
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = cardBg,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        sheetState       = sheetState,
+        containerColor   = cardBg,
+        shape            = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -287,36 +245,30 @@ fun NoteDetailBottomSheet(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 48.dp)
         ) {
-            // ── Sarlavha ──────────────────────────────────────────────────────
             if (note.title.isNotBlank()) {
                 Text(
-                    text = note.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = TextPrimary,
+                    text       = note.title,
+                    style      = MaterialTheme.typography.headlineSmall,
+                    color      = c.textPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(12.dp))
             }
-
-            // ── Kontent ───────────────────────────────────────────────────────
             if (note.content.isNotBlank()) {
                 Text(
-                    text = note.content,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary,
+                    text       = note.content,
+                    style      = MaterialTheme.typography.bodyLarge,
+                    color      = c.textSecondary,
                     lineHeight = 26.sp
                 )
                 Spacer(Modifier.height(24.dp))
             }
-
-            // ── Sana ──────────────────────────────────────────────────────────
-            HorizontalDivider(color = TextHint.copy(alpha = 0.2f))
+            HorizontalDivider(color = c.textHint.copy(alpha = 0.2f))
             Spacer(Modifier.height(12.dp))
             Text(
-                text = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.getDefault())
-                    .format(Date(note.updatedAt)),
+                text  = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.getDefault()).format(Date(note.updatedAt)),
                 style = MaterialTheme.typography.labelSmall,
-                color = TextHint
+                color = c.textHint
             )
         }
     }
@@ -330,16 +282,17 @@ fun AddNoteBottomSheet(
     onDismiss: () -> Unit,
     onConfirm: (title: String, content: String, color: Int) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var title by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
+    val c             = MaterialTheme.appColors
+    val sheetState    = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var title         by remember { mutableStateOf("") }
+    var content       by remember { mutableStateOf("") }
     var selectedColor by remember { mutableIntStateOf(0) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = DarkSurface,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        sheetState       = sheetState,
+        containerColor   = c.surface,
+        shape            = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -349,17 +302,16 @@ fun AddNoteBottomSheet(
                 .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // ── Rang ──────────────────────────────────────────────────────────
             Text(
-                text = "Eslatma uchun ranglar",
+                text  = "Eslatma uchun ranglar",
                 style = MaterialTheme.typography.labelMedium,
-                color = TextSecondary
+                color = c.textSecondary
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment     = Alignment.CenterVertically
             ) {
-                NoteCardColors.forEachIndexed { idx, color ->
+                c.noteCardColors.forEachIndexed { idx, color ->
                     Box(
                         modifier = Modifier
                             .size(if (selectedColor == idx) 48.dp else 40.dp)
@@ -367,73 +319,57 @@ fun AddNoteBottomSheet(
                             .background(color)
                             .then(
                                 if (selectedColor == idx)
-                                    Modifier.border(
-                                        2.dp,
-                                        TextPrimary.copy(alpha = 0.7f),
-                                        CircleShape
-                                    )
+                                    Modifier.border(2.dp, c.textPrimary.copy(alpha = 0.7f), CircleShape)
                                 else Modifier
                             )
                             .clickable { selectedColor = idx },
                         contentAlignment = Alignment.Center
                     ) {
                         if (selectedColor == idx) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Tanlangan",
-                                tint = TextPrimary,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            Icon(Icons.Default.Check, contentDescription = null, tint = c.textPrimary, modifier = Modifier.size(22.dp))
                         }
                     }
                 }
             }
 
             Text(
-                text = "Yangi eslatma",
-                style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary,
+                text       = "Yangi eslatma",
+                style      = MaterialTheme.typography.titleLarge,
+                color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
             )
 
-            // ── Sarlavha ──────────────────────────────────────────────────────
             OutlinedTextField(
-                value = title,
+                value         = title,
                 onValueChange = { title = it },
-                placeholder = { Text("Sarlavha (ixtiyoriy)...", color = TextHint) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = searchFieldColors(),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                placeholder   = { Text("Sarlavha (ixtiyoriy)...", color = c.textHint) },
+                modifier      = Modifier.fillMaxWidth(),
+                colors        = noteSearchColors(),
+                singleLine    = true,
+                shape         = RoundedCornerShape(12.dp)
             )
 
-            // ── Matn ──────────────────────────────────────────────────────────
             OutlinedTextField(
-                value = content,
+                value         = content,
                 onValueChange = { content = it },
-                placeholder = { Text("Fikrlaringizni yozing...", color = TextHint) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 120.dp),
-                colors = searchFieldColors(),
-                maxLines = 8,
-                shape = RoundedCornerShape(12.dp)
+                placeholder   = { Text("Fikrlaringizni yozing...", color = c.textHint) },
+                modifier      = Modifier.fillMaxWidth().heightIn(min = 120.dp),
+                colors        = noteSearchColors(),
+                maxLines      = 8,
+                shape         = RoundedCornerShape(12.dp)
             )
 
-            // ── Saqlash tugmasi ───────────────────────────────────────────────
             Button(
                 onClick = {
                     if (title.isNotBlank() || content.isNotBlank()) {
                         onConfirm(title, content, selectedColor)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(14.dp),
+                colors   = ButtonDefaults.buttonColors(
                     containerColor = AccentAmber,
-                    contentColor = DarkBackground
+                    contentColor   = c.background
                 )
             ) {
                 Text("Saqlash", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
@@ -445,59 +381,37 @@ fun AddNoteBottomSheet(
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun SectionLabel() {
+private fun PinnedLabel() {
+    val c = MaterialTheme.appColors
     Row(
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(bottom = 4.dp)
+        modifier              = Modifier.padding(bottom = 4.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.PushPin,
-            contentDescription = null,
-            tint = AccentAmber,
-            modifier = Modifier.size(14.dp)
-        )
-        Text(
-            text = "Pin qilingan",
-            style = MaterialTheme.typography.labelMedium,
-            color = TextSecondary
-        )
+        Icon(Icons.Default.PushPin, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(14.dp))
+        Text("Pin qilingan", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
     }
 }
 
 @Composable
-private fun EmptyNotesPlaceholder() {
+private fun NoteEmptyPlaceholder() {
+    val c = MaterialTheme.appColors
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 64.dp),
+        modifier            = Modifier.fillMaxWidth().padding(top = 64.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(
-            Icons.AutoMirrored.Filled.Notes,
-            contentDescription = null,
-            tint = TextHint,
-            modifier = Modifier.size(64.dp)
-        )
-        Text(
-            "Hali eslatma yo'q",
-            style = MaterialTheme.typography.titleSmall,
-            color = TextSecondary
-        )
-        Text(
-            "FAB orqali birinchi eslatmani qo'shing",
-            style = MaterialTheme.typography.bodySmall,
-            color = TextHint
-        )
+        Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null, tint = c.textHint, modifier = Modifier.size(64.dp))
+        Text("Hali eslatma yo'q", style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
+        Text("FAB orqali birinchi eslatmani qo'shing", style = MaterialTheme.typography.bodySmall, color = c.textHint)
     }
 }
 
 @Composable
-private fun searchFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = AccentAmber,
-    unfocusedBorderColor = DividerColor,
-    cursorColor = AccentAmber,
-    focusedTextColor = TextPrimary,
-    unfocusedTextColor = TextPrimary
+private fun noteSearchColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor   = AccentAmber,
+    unfocusedBorderColor = MaterialTheme.appColors.divider,
+    cursorColor          = AccentAmber,
+    focusedTextColor     = MaterialTheme.appColors.textPrimary,
+    unfocusedTextColor   = MaterialTheme.appColors.textPrimary
 )

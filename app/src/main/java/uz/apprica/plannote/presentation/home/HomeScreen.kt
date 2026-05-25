@@ -12,18 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,12 +22,8 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,13 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import uz.apprica.plannote.ui.theme.AccentAmber
-import uz.apprica.plannote.ui.theme.DarkBackground
-import uz.apprica.plannote.ui.theme.DarkCard
-import uz.apprica.plannote.ui.theme.DarkCardAlt
 import uz.apprica.plannote.ui.theme.PrimaryTeal
-import uz.apprica.plannote.ui.theme.TextHint
-import uz.apprica.plannote.ui.theme.TextPrimary
-import uz.apprica.plannote.ui.theme.TextSecondary
+import uz.apprica.plannote.ui.theme.appColors
 
 @Composable
 fun HomeScreen(
@@ -67,48 +47,53 @@ fun HomeScreen(
     onNavigateToStreak: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    val appColors = MaterialTheme.appColors
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(appColors.background)
             .verticalScroll(rememberScrollState())
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        GreetingSection(state)
-        QuoteCard(quote = state.quote, onRefresh = viewModel::refreshQuote)
+        GreetingSection(state, appColors)
+        QuoteCard(quote = state.quote, onRefresh = viewModel::refreshQuote, appColors = appColors)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatCard(
-                modifier = Modifier.weight(1f),
-                label = "Bugungi vazifalar",
-                value = "${state.todayTasksDone}/${state.todayTasksTotal}",
-                emoji = "✅",
+                modifier    = Modifier.weight(1f),
+                label       = "Bugungi vazifalar",
+                value       = "${state.todayTasksDone}/${state.todayTasksTotal}",
+                emoji       = "✅",
                 accentColor = PrimaryTeal,
-                onClick = onNavigateToTasks
+                onClick     = onNavigateToTasks,
+                appColors   = appColors
             )
             StatCard(
-                modifier = Modifier.weight(1f),
-                label = "Eslatmalar",
-                value = state.notesCount.toString(),
-                emoji = "📝",
+                modifier    = Modifier.weight(1f),
+                label       = "Eslatmalar",
+                value       = state.notesCount.toString(),
+                emoji       = "📝",
                 accentColor = AccentAmber,
-                onClick = onNavigateToNotes
+                onClick     = onNavigateToNotes,
+                appColors   = appColors
             )
         }
         StreakCard(
-            streak = state.currentStreak,
+            streak     = state.currentStreak,
             bestStreak = state.bestStreak,
-            onClick = onNavigateToStreak
+            onClick    = onNavigateToStreak,
+            appColors  = appColors
         )
         MoodTracker(
-            selected = state.selectedMood,
-            onSelected = viewModel::onMoodSelected
+            selected  = state.selectedMood,
+            onSelected = viewModel::onMoodSelected,
+            appColors = appColors
         )
 
         Spacer(Modifier.height(8.dp))
@@ -116,25 +101,29 @@ fun HomeScreen(
 }
 
 @Composable
-private fun GreetingSection(state: HomeUiState) {
+private fun GreetingSection(state: HomeUiState, appColors: uz.apprica.plannote.ui.theme.AppColors) {
     Column {
         Text(
-            text = "${state.greetingEmoji}  ${state.greeting}",
-            style = MaterialTheme.typography.headlineSmall,
-            color = TextPrimary,
+            text       = "${state.greetingEmoji}  ${state.greeting}",
+            style      = MaterialTheme.typography.headlineSmall,
+            color      = appColors.textPrimary,
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = state.todayDate,
+            text  = state.todayDate,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = appColors.textSecondary
         )
     }
 }
 
 @Composable
-private fun QuoteCard(quote: String, onRefresh: () -> Unit) {
+private fun QuoteCard(
+    quote: String,
+    onRefresh: () -> Unit,
+    appColors: uz.apprica.plannote.ui.theme.AppColors
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,25 +146,25 @@ private fun QuoteCard(quote: String, onRefresh: () -> Unit) {
                 Icon(Icons.Default.Lightbulb, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = "Kunlik ilhom",
+                    text  = "Kunlik ilhom",
                     style = MaterialTheme.typography.labelMedium,
                     color = PrimaryTeal
                 )
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = onRefresh, modifier = Modifier.size(28.dp)) {
                     Icon(
-                        imageVector = Icons.Default.AutoAwesome,
+                        imageVector        = Icons.Default.AutoAwesome,
                         contentDescription = "Yangi iqtibos",
-                        tint = PrimaryTeal,
-                        modifier = Modifier.size(16.dp)
+                        tint               = PrimaryTeal,
+                        modifier           = Modifier.size(16.dp)
                     )
                 }
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "\"$quote\"",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary,
+                text      = "\"$quote\"",
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = appColors.textPrimary,
                 fontStyle = FontStyle.Italic,
                 lineHeight = 22.sp
             )
@@ -190,12 +179,13 @@ private fun StatCard(
     value: String,
     emoji: String,
     accentColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    appColors: uz.apprica.plannote.ui.theme.AppColors
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkCard)
+            .background(appColors.card)
             .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
@@ -203,67 +193,72 @@ private fun StatCard(
             Text(emoji, fontSize = 24.sp)
             Spacer(Modifier.height(8.dp))
             Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                color = accentColor,
+                text       = value,
+                style      = MaterialTheme.typography.titleLarge,
+                color      = accentColor,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = label,
+                text  = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = appColors.textSecondary
             )
         }
     }
 }
 
 @Composable
-private fun StreakCard(streak: Int, bestStreak: Int, onClick: () -> Unit) {
+private fun StreakCard(
+    streak: Int,
+    bestStreak: Int,
+    onClick: () -> Unit,
+    appColors: uz.apprica.plannote.ui.theme.AppColors
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkCard)
+            .background(appColors.card)
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier              = Modifier.fillMaxWidth(),
+            verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
                 Text(
-                    text = "🔥 Ketma-ket streak",
+                    text  = "🔥 Ketma-ket streak",
                     style = MaterialTheme.typography.labelMedium,
                     color = AccentAmber
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = "$streak",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = TextPrimary,
+                        text       = "$streak",
+                        style      = MaterialTheme.typography.headlineLarge,
+                        color      = appColors.textPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "kun",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextSecondary,
+                        text     = "kun",
+                        style    = MaterialTheme.typography.titleMedium,
+                        color    = appColors.textSecondary,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                 }
                 Spacer(Modifier.height(6.dp))
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment     = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = TextHint, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = appColors.textHint, modifier = Modifier.size(16.dp))
                     Text(
-                        text = "Rekord: $bestStreak kun",
+                        text  = "Rekord: $bestStreak kun",
                         style = MaterialTheme.typography.labelMedium,
-                        color = TextHint
+                        color = appColors.textHint
                     )
                 }
             }
@@ -280,38 +275,42 @@ private fun StreakCard(streak: Int, bestStreak: Int, onClick: () -> Unit) {
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Batafsil →",
+                    text  = "Batafsil →",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextHint
+                    color = appColors.textHint
                 )
             }
         }
     }
 }
 
-private val MOODS = listOf("😢", "😐", "😊", "😄", "🤩")
+private val MOODS       = listOf("😢", "😐", "😊", "😄", "🤩")
 private val MOOD_LABELS = listOf("Yomon", "O'rtacha", "Yaxshi", "Ajoyib", "Super!")
 
 @Composable
-private fun MoodTracker(selected: Int?, onSelected: (Int) -> Unit) {
+private fun MoodTracker(
+    selected: Int?,
+    onSelected: (Int) -> Unit,
+    appColors: uz.apprica.plannote.ui.theme.AppColors
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkCard)
+            .background(appColors.card)
             .padding(16.dp)
     ) {
         Text(
-            text = "Bugungi kayfiyat",
-            style = MaterialTheme.typography.titleSmall,
-            color = TextPrimary,
+            text       = "Bugungi kayfiyat",
+            style      = MaterialTheme.typography.titleSmall,
+            color      = appColors.textPrimary,
             fontWeight = FontWeight.SemiBold
         )
         Spacer(Modifier.height(12.dp))
         AnimatedVisibility(
             visible = selected != null,
-            enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-            exit = shrinkVertically(tween(200)) + fadeOut(tween(200))
+            enter   = expandVertically(tween(250)) + fadeIn(tween(250)),
+            exit    = shrinkVertically(tween(200)) + fadeOut(tween(200))
         ) {
             Column {
                 Box(
@@ -330,14 +329,14 @@ private fun MoodTracker(selected: Int?, onSelected: (Int) -> Unit) {
                             Text(MOODS[selected - 1], fontSize = 44.sp)
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = "Bugungi kayfiyatingiz:",
+                                text  = "Bugungi kayfiyatingiz:",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextHint
+                                color = appColors.textHint
                             )
                             Text(
-                                text = MOOD_LABELS[selected - 1],
-                                style = MaterialTheme.typography.titleSmall,
-                                color = PrimaryTeal,
+                                text       = MOOD_LABELS[selected - 1],
+                                style      = MaterialTheme.typography.titleSmall,
+                                color      = PrimaryTeal,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -347,29 +346,29 @@ private fun MoodTracker(selected: Int?, onSelected: (Int) -> Unit) {
             }
         }
         Text(
-            text = if (selected != null) "✏️  O'zgartirish" else "Bugun kayfiyatingizni belgilang",
+            text  = if (selected != null) "✏️  O'zgartirish" else "Bugun kayfiyatingizni belgilang",
             style = MaterialTheme.typography.labelSmall,
-            color = TextHint
+            color = appColors.textHint
         )
         Spacer(Modifier.height(8.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier              = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             MOODS.forEachIndexed { index, emoji ->
-                val moodIndex = index + 1
+                val moodIndex  = index + 1
                 val isSelected = selected == moodIndex
 
                 val bgColor by animateColorAsState(
-                    targetValue = if (isSelected) PrimaryTeal.copy(alpha = 0.25f) else DarkCardAlt,
+                    targetValue   = if (isSelected) PrimaryTeal.copy(alpha = 0.25f) else appColors.cardAlt,
                     animationSpec = tween(200),
-                    label = "mood_bg_$moodIndex"
+                    label         = "mood_bg_$moodIndex"
                 )
                 val emojiScale by animateFloatAsState(
-                    targetValue = if (isSelected) 1.25f else 1f,
+                    targetValue   = if (isSelected) 1.25f else 1f,
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
+                        stiffness    = Spring.StiffnessMedium
                     ),
                     label = "mood_scale_$moodIndex"
                 )
@@ -384,7 +383,7 @@ private fun MoodTracker(selected: Int?, onSelected: (Int) -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = emoji,
+                        text     = emoji,
                         fontSize = if (isSelected) 26.sp else 22.sp
                     )
                 }
@@ -392,4 +391,3 @@ private fun MoodTracker(selected: Int?, onSelected: (Int) -> Unit) {
         }
     }
 }
-

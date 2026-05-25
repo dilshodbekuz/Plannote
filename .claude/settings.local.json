@@ -15,7 +15,8 @@
       "Bash(./gradlew assembleDebug)",
       "Bash(./gradlew kspDebugKotlin compileDebugKotlin)",
       "Bash(xargs cat)",
-      "Bash(grep -v \"^--$\")"
+      "Bash(grep -v \"^--$\")",
+      "Bash(./gradlew assembleDebug --no-daemon)"
     ]
   }
 }

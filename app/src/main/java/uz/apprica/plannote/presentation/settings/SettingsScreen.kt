@@ -18,11 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import uz.apprica.plannote.ui.theme.*
+import uz.apprica.plannote.ui.theme.AccentAmber
+import uz.apprica.plannote.ui.theme.ErrorRed
+import uz.apprica.plannote.ui.theme.PrimaryTeal
+import uz.apprica.plannote.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+    val c     = MaterialTheme.appColors
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showResetDialog   by remember { mutableStateOf(false) }
@@ -30,41 +34,31 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     var snackMsg          by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(snackMsg) {
-        snackMsg?.let {
-            snackbarHostState.showSnackbar(it)
-            snackMsg = null
-        }
+        snackMsg?.let { snackbarHostState.showSnackbar(it); snackMsg = null }
     }
 
     Scaffold(
-        containerColor = DarkBackground,
+        containerColor = c.background,
         snackbarHost   = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(Modifier.height(16.dp))
-
             // ── Header ────────────────────────────────────────────────────────
             Text(
                 text       = "Sozlamalar",
                 style      = MaterialTheme.typography.headlineSmall,
-                color      = TextPrimary,
+                color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
             )
 
             // ── Streak info ───────────────────────────────────────────────────
-            StreakInfoCard(
-                currentStreak = state.currentStreak,
-                bestStreak    = state.bestStreak
-            )
+            StreakInfoCard(currentStreak = state.currentStreak, bestStreak = state.bestStreak)
 
             // ── Ko'rinish + Streak ────────────────────────────────────────────
             SettingsSection {
@@ -75,7 +69,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     checked         = state.isDarkMode,
                     onCheckedChange = { viewModel.setDarkMode(it) }
                 )
-                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
+                HorizontalDivider(color = c.divider, modifier = Modifier.padding(horizontal = 8.dp))
                 ClickableRow(
                     icon      = Icons.Default.RestartAlt,
                     title     = "Streakni nollashtirish",
@@ -85,79 +79,58 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 )
             }
 
-            // ── Versiya + Ishlab chiquvchi ────────────────────────────────────
+            // ── Versiya + Ishlab chiquvchi + Min. Android ─────────────────────
             SettingsSection {
-                InfoRow(
-                    icon  = Icons.Default.Info,
-                    title = "Versiya",
-                    value = "1.0.0"
-                )
-                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 8.dp))
-                InfoRow(
-                    icon  = Icons.Default.Code,
-                    title = "Ishlab chiquvchi",
-                    value = "Plannote Team"
-                )
-            }
-
-            // ── Min. Android versiyasi ────────────────────────────────────────
-            SettingsSection {
-                InfoRow(
-                    icon  = Icons.Default.Android,
-                    title = "Min. Android versiyasi",
-                    value = "Android 7.0+"
-                )
+                InfoRow(icon = Icons.Default.Info,    title = "Versiya",                value = "1.0.0")
+                HorizontalDivider(color = c.divider, modifier = Modifier.padding(horizontal = 8.dp))
+                InfoRow(icon = Icons.Default.Code,    title = "Ishlab chiquvchi",        value = "Plannote Team")
+                HorizontalDivider(color = c.divider, modifier = Modifier.padding(horizontal = 8.dp))
+                InfoRow(icon = Icons.Default.Android, title = "Min. Android versiyasi",  value = "Android 7.0+")
             }
 
             Spacer(Modifier.height(24.dp))
         }
     }
 
-    // ── Streak reset dialog ───────────────────────────────────────────────────
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            containerColor   = DarkCard,
-            title = {
-                Text("Streakni nollashtirish", color = TextPrimary, fontWeight = FontWeight.Bold)
-            },
-            text = {
+            containerColor   = MaterialTheme.appColors.card,
+            title  = { Text("Streakni nollashtirish", color = MaterialTheme.appColors.textPrimary, fontWeight = FontWeight.Bold) },
+            text   = {
                 Text(
                     "Joriy streak (${state.currentStreak} kun) o'chiriladi. Bu amalni qaytarib bo'lmaydi.",
-                    color = TextSecondary
+                    color = MaterialTheme.appColors.textSecondary
                 )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.confirmResetStreak()
-                        showResetDialog = false
-                        snackMsg = "Streak nollashtirildi ✓"
-                    }
-                ) {
+                TextButton(onClick = {
+                    viewModel.confirmResetStreak()
+                    showResetDialog = false
+                    snackMsg = "Streak nollashtirildi ✓"
+                }) {
                     Text("Ha, nollash", color = ErrorRed, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text("Bekor qilish", color = TextSecondary)
+                    Text("Bekor qilish", color = MaterialTheme.appColors.textSecondary)
                 }
             }
         )
     }
 }
 
-// ── Settings Section (bitta karta) ────────────────────────────────────────────
+// ── Settings Section ──────────────────────────────────────────────────────────
 
 @Composable
-private fun SettingsSection(
-    content: @Composable ColumnScope.() -> Unit
-) {
+private fun SettingsSection(content: @Composable ColumnScope.() -> Unit) {
+    val c = MaterialTheme.appColors
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkCard)
+            .background(c.card)
     ) {
         Column { content() }
     }
@@ -173,26 +146,25 @@ private fun ToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val c = MaterialTheme.appColors
     Row(
-        modifier          = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier          = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = TextPrimary,   fontWeight = FontWeight.Medium)
-            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = c.textPrimary,   fontWeight = FontWeight.Medium)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
         }
         Switch(
             checked         = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor   = DarkBackground,
+                checkedThumbColor   = c.background,
                 checkedTrackColor   = PrimaryTeal,
-                uncheckedThumbColor = TextHint,
-                uncheckedTrackColor = DarkCardAlt
+                uncheckedThumbColor = c.textHint,
+                uncheckedTrackColor = c.cardAlt
             )
         )
     }
@@ -208,46 +180,34 @@ private fun ClickableRow(
     onClick: () -> Unit,
     tintColor: androidx.compose.ui.graphics.Color = PrimaryTeal
 ) {
+    val c = MaterialTheme.appColors
     Row(
-        modifier          = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier          = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, contentDescription = null, tint = tintColor, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = TextPrimary,   fontWeight = FontWeight.Medium)
-            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text(title,    style = MaterialTheme.typography.bodyMedium,  color = c.textPrimary,   fontWeight = FontWeight.Medium)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
         }
-        Icon(
-            Icons.Default.ChevronRight,
-            contentDescription = null,
-            tint     = TextHint,
-            modifier = Modifier.size(20.dp)
-        )
+        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = c.textHint, modifier = Modifier.size(20.dp))
     }
 }
 
 // ── Info Row ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun InfoRow(
-    icon: ImageVector,
-    title: String,
-    value: String
-) {
+private fun InfoRow(icon: ImageVector, title: String, value: String) {
+    val c = MaterialTheme.appColors
     Row(
-        modifier          = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier          = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = c.textSecondary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(14.dp))
-        Text(title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodySmall,  color = TextHint)
+        Text(title, style = MaterialTheme.typography.bodyMedium, color = c.textPrimary, modifier = Modifier.weight(1f))
+        Text(value, style = MaterialTheme.typography.bodySmall,  color = c.textHint)
     }
 }
 
@@ -255,11 +215,12 @@ private fun InfoRow(
 
 @Composable
 private fun StreakInfoCard(currentStreak: Int, bestStreak: Int) {
+    val c = MaterialTheme.appColors
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkCard)
+            .background(c.card)
             .padding(20.dp)
     ) {
         Row(
@@ -268,29 +229,14 @@ private fun StreakInfoCard(currentStreak: Int, bestStreak: Int) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Default.Whatshot, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(36.dp))
-                Text(
-                    text       = "$currentStreak",
-                    style      = MaterialTheme.typography.titleLarge,
-                    color      = AccentAmber,
-                    fontWeight = FontWeight.Bold
-                )
-                Text("Joriy streak", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                Text("$currentStreak", style = MaterialTheme.typography.titleLarge, color = AccentAmber, fontWeight = FontWeight.Bold)
+                Text("Joriy streak", style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
             }
-            HorizontalDivider(
-                modifier = Modifier
-                    .height(60.dp)
-                    .width(1.dp),
-                color    = DividerColor
-            )
+            HorizontalDivider(modifier = Modifier.height(60.dp).width(1.dp), color = c.divider)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(36.dp))
-                Text(
-                    text       = "$bestStreak",
-                    style      = MaterialTheme.typography.titleLarge,
-                    color      = PrimaryTeal,
-                    fontWeight = FontWeight.Bold
-                )
-                Text("Rekord streak", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                Text("$bestStreak", style = MaterialTheme.typography.titleLarge, color = PrimaryTeal, fontWeight = FontWeight.Bold)
+                Text("Rekord streak", style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
             }
         }
     }

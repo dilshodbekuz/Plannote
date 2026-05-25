@@ -40,17 +40,16 @@ import uz.apprica.plannote.domain.model.Task
 import uz.apprica.plannote.ui.theme.*
 import kotlin.math.roundToInt
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
+    val c     = MaterialTheme.appColors
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(c.background)
     ) {
         Column(
             modifier = Modifier
@@ -59,7 +58,6 @@ fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(Modifier.height(16.dp))
-
             Spacer(Modifier.height(20.dp))
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -92,11 +90,9 @@ fun TaskScreen(viewModel: TaskViewModel = hiltViewModel()) {
 
         FloatingActionButton(
             onClick        = viewModel::showAddSheet,
-            modifier       = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
+            modifier       = Modifier.align(Alignment.BottomEnd).padding(24.dp),
             containerColor = PrimaryTeal,
-            contentColor   = DarkBackground,
+            contentColor   = c.background,
             shape          = CircleShape
         ) {
             Icon(Icons.Default.Add, contentDescription = "Vazifa qo'shish")
@@ -124,23 +120,20 @@ fun CircularProgressRing(
     size: androidx.compose.ui.unit.Dp = 148.dp,
     strokeDp: androidx.compose.ui.unit.Dp = 14.dp
 ) {
+    val c = MaterialTheme.appColors
     val animatedProgress by animateFloatAsState(
         targetValue   = progress.coerceIn(0f, 1f),
         animationSpec = tween(1200, easing = FastOutSlowInEasing),
         label         = "ring"
     )
     val strokePx = with(LocalDensity.current) { strokeDp.toPx() }
+    val bgCol    = c.card
 
     Box(modifier = modifier.size(size), contentAlignment = Alignment.Center) {
         androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
             val radius = (this.size.minDimension - strokePx) / 2f
             val center = Offset(this.size.width / 2f, this.size.height / 2f)
-            drawCircle(
-                color  = DarkCard,
-                radius = radius,
-                center = center,
-                style  = Stroke(strokePx, cap = StrokeCap.Round)
-            )
+            drawCircle(color = bgCol, radius = radius, center = center, style = Stroke(strokePx, cap = StrokeCap.Round))
             if (animatedProgress > 0f) {
                 drawArc(
                     color      = PrimaryTeal,
@@ -160,8 +153,8 @@ fun CircularProgressRing(
                 color      = PrimaryTeal,
                 fontWeight = FontWeight.Bold
             )
-            Text("$done / $total", style = MaterialTheme.typography.bodySmall,  color = TextSecondary)
-            Text("bajarildi",      style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text("$done / $total", style = MaterialTheme.typography.bodySmall,  color = c.textSecondary)
+            Text("bajarildi",      style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
         }
     }
 }
@@ -175,74 +168,61 @@ fun TaskItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val c            = MaterialTheme.appColors
     val done         = task.isCompleted
     val priorityTint = task.priority.color()
 
     Card(
         modifier  = modifier.fillMaxWidth(),
         shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor = if (done) DarkCardAlt else DarkCard
-        ),
+        colors    = CardDefaults.cardColors(containerColor = if (done) c.cardAlt else c.card),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
-            modifier          = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+            modifier          = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ── Priority bar ──────────────────────────────────────────────
             Box(
                 modifier = Modifier
                     .width(5.dp)
                     .fillMaxHeight()
                     .background(priorityTint.copy(alpha = if (done) 0.25f else 0.85f))
             )
-
-            // ── Checkbox ──────────────────────────────────────────────────
             Checkbox(
                 checked         = done,
                 onCheckedChange = onToggle,
                 modifier        = Modifier.alpha(if (done) 0.55f else 1f),
                 colors          = CheckboxDefaults.colors(
-                    checkedColor   = PrimaryTeal,
-                    uncheckedColor = TextSecondary,
-                    checkmarkColor = DarkBackground
+                    checkedColor    = PrimaryTeal,
+                    uncheckedColor  = c.textSecondary,
+                    checkmarkColor  = c.background
                 )
             )
-
-            // ── Content ───────────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .alpha(if (done) 0.50f else 1f)
                     .padding(top = 12.dp, bottom = 12.dp, end = 4.dp)
             ) {
-                // Kategoriya — yuqorida, katta, ko'rinadigan
                 if (task.category.isNotBlank()) {
                     Text(
-                        text       = task.category,
-                        fontSize   = 12.sp,
-                        color      = TextSecondary,
-                        fontWeight = FontWeight.Medium,
+                        text          = task.category,
+                        fontSize      = 12.sp,
+                        color         = c.textSecondary,
+                        fontWeight    = FontWeight.Medium,
                         letterSpacing = 0.3.sp
                     )
                     Spacer(Modifier.height(3.dp))
                 }
-
-                // Sarlavha
                 Text(
                     text           = task.title,
                     style          = MaterialTheme.typography.bodyLarge,
-                    color          = TextPrimary,
+                    color          = c.textPrimary,
                     fontWeight     = if (done) FontWeight.Normal else FontWeight.Medium,
                     textDecoration = if (done) TextDecoration.LineThrough else null,
                     maxLines       = 2,
                     overflow       = TextOverflow.Ellipsis
                 )
-
-                // Priority — pastda, kichik, rangdor
                 Spacer(Modifier.height(3.dp))
                 Text(
                     text       = task.priority.label(),
@@ -251,13 +231,9 @@ fun TaskItem(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-
-            // ── Delete ────────────────────────────────────────────────────
             IconButton(
                 onClick  = onDelete,
-                modifier = Modifier
-                    .size(46.dp)
-                    .padding(end = 6.dp)
+                modifier = Modifier.size(46.dp).padding(end = 6.dp)
             ) {
                 Icon(
                     imageVector        = Icons.Default.Delete,
@@ -278,24 +254,20 @@ fun AddTaskBottomSheet(
     onDismiss: () -> Unit,
     onConfirm: (title: String, category: String, priority: Priority) -> Unit
 ) {
+    val c          = MaterialTheme.appColors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     var title      by remember { mutableStateOf("") }
     var category   by remember { mutableStateOf("Shaxsiy") }
     var priority   by remember { mutableStateOf(Priority.MEDIUM) }
     var titleError by remember { mutableStateOf(false) }
 
     val categories = listOf("Ish", "Shaxsiy", "Salomatlik", "Ta'lim", "Boshqa")
-    val priorities = listOf(
-        Priority.LOW    to "Past",
-        Priority.MEDIUM to "O'rta",
-        Priority.HIGH   to "Yuqori"
-    )
+    val priorities = listOf(Priority.LOW to "Past", Priority.MEDIUM to "O'rta", Priority.HIGH to "Yuqori")
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
-        containerColor   = DarkSurface,
+        containerColor   = c.surface,
         shape            = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
@@ -309,15 +281,14 @@ fun AddTaskBottomSheet(
             Text(
                 text       = "Yangi vazifa",
                 style      = MaterialTheme.typography.titleLarge,
-                color      = TextPrimary,
+                color      = c.textPrimary,
                 fontWeight = FontWeight.Bold
             )
 
-            // ── Nom ──────────────────────────────────────────────────────────
             OutlinedTextField(
                 value          = title,
                 onValueChange  = { title = it; titleError = false },
-                placeholder    = { Text("Vazifa nomi *", color = TextHint) },
+                placeholder    = { Text("Vazifa nomi *", color = c.textHint) },
                 isError        = titleError,
                 supportingText = if (titleError) ({ Text("Nom kiritish shart!") }) else null,
                 modifier       = Modifier.fillMaxWidth(),
@@ -326,13 +297,8 @@ fun AddTaskBottomSheet(
                 shape          = RoundedCornerShape(12.dp)
             )
 
-            // ── Kategoriya ───────────────────────────────────────────────────
             Column {
-                Text(
-                    "Kategoriya",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary
-                )
+                Text("Kategoriya", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
                 Spacer(Modifier.height(8.dp))
                 Row(
                     modifier              = Modifier.horizontalScroll(rememberScrollState()),
@@ -345,22 +311,17 @@ fun AddTaskBottomSheet(
                             label    = { Text(cat, fontSize = 12.sp) },
                             colors   = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = PrimaryTeal,
-                                selectedLabelColor     = DarkBackground,
-                                containerColor         = DarkCard,
-                                labelColor             = TextSecondary
+                                selectedLabelColor     = c.background,
+                                containerColor         = c.card,
+                                labelColor             = c.textSecondary
                             )
                         )
                     }
                 }
             }
 
-            // ── Muhimlik ─────────────────────────────────────────────────────
             Column {
-                Text(
-                    "Muhimlik",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary
-                )
+                Text("Muhimlik", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     priorities.forEach { (p, label) ->
@@ -370,28 +331,25 @@ fun AddTaskBottomSheet(
                             label    = { Text(label, fontSize = 12.sp) },
                             colors   = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = p.color(),
-                                selectedLabelColor     = DarkBackground,
-                                containerColor         = DarkCard,
-                                labelColor             = TextSecondary
+                                selectedLabelColor     = c.background,
+                                containerColor         = c.card,
+                                labelColor             = c.textSecondary
                             )
                         )
                     }
                 }
             }
 
-            // ── Qo'shish ─────────────────────────────────────────────────────
             Button(
                 onClick = {
                     if (title.isBlank()) { titleError = true; return@Button }
                     onConfirm(title.trim(), category, priority)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape  = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(14.dp),
+                colors   = ButtonDefaults.buttonColors(
                     containerColor = PrimaryTeal,
-                    contentColor   = DarkBackground
+                    contentColor   = c.background
                 )
             ) {
                 Text("Qo'shish", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
@@ -404,24 +362,15 @@ fun AddTaskBottomSheet(
 
 @Composable
 private fun EmptyTasksPlaceholder() {
+    val c = MaterialTheme.appColors
     Column(
-        modifier              = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp),
-        horizontalAlignment   = Alignment.CenterHorizontally,
-        verticalArrangement   = Arrangement.spacedBy(8.dp)
+        modifier            = Modifier.fillMaxWidth().padding(top = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = TextHint, modifier = Modifier.size(64.dp))
-        Text(
-            text  = "Bugun uchun vazifa yo'q",
-            style = MaterialTheme.typography.titleSmall,
-            color = TextSecondary
-        )
-        Text(
-            text  = "+ tugmasi orqali vazifa qo'shing",
-            style = MaterialTheme.typography.bodySmall,
-            color = TextHint
-        )
+        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = c.textHint, modifier = Modifier.size(64.dp))
+        Text("Bugun uchun vazifa yo'q", style = MaterialTheme.typography.titleSmall, color = c.textSecondary)
+        Text("+ tugmasi orqali vazifa qo'shing", style = MaterialTheme.typography.bodySmall, color = c.textHint)
     }
 }
 
@@ -442,9 +391,9 @@ private fun Priority.label(): String = when (this) {
 @Composable
 private fun taskFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor   = PrimaryTeal,
-    unfocusedBorderColor = DividerColor,
+    unfocusedBorderColor = MaterialTheme.appColors.divider,
     cursorColor          = PrimaryTeal,
     focusedLabelColor    = PrimaryTeal,
-    focusedTextColor     = TextPrimary,
-    unfocusedTextColor   = TextPrimary
+    focusedTextColor     = MaterialTheme.appColors.textPrimary,
+    unfocusedTextColor   = MaterialTheme.appColors.textPrimary
 )
