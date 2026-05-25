@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\data\\\\local\\\\dao\",)",
+      "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\data\\\\local\\\\entity\",)",
+      "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\data\\\\repository\",)",
+      "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\domain\\\\model\",)",
+      "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\domain\\\\repository\",)",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"OK\")"
+    ]
+  }
+}
