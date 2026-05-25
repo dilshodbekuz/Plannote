@@ -7,7 +7,14 @@
       "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\domain\\\\model\",)",
       "Bash(\"C:\\\\Users\\\\xakim\\\\AndroidStudioProjects\\\\Plannote\\\\app\\\\src\\\\main\\\\java\\\\com\\\\xakim\\\\plannote\\\\domain\\\\repository\",)",
       "Bash(Out-Null)",
-      "Bash(Write-Output \"OK\")"
+      "Bash(Write-Output \"OK\")",
+      "WebSearch",
+      "WebFetch(domain:mvnrepository.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(./gradlew compileDebugKotlin)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(./gradlew kspDebugKotlin compileDebugKotlin)",
+      "Bash(xargs cat)"
     ]
   }
 }
